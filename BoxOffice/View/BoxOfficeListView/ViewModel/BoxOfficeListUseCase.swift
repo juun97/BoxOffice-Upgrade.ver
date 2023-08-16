@@ -6,3 +6,16 @@
 //
 
 import Foundation
+import RxSwift
+
+protocol BoxOfficeListUseCaseType {
+    func fetchBoxOfficeData()
+}
+
+final class BoxOfficeListUseCase: BoxOfficeListUseCaseType {
+    func fetchBoxOfficeData() {
+        <#code#>
+    }
+    
+    
+}

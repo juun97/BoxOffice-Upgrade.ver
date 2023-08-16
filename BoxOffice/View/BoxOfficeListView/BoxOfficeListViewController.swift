@@ -49,6 +49,7 @@ final class BoxOfficeListViewController: UIViewController {
         configureRefreshControl()
     }
     
+    // MARK: - UILogic
     private func configureUI() {
         view.addSubview(collectionView)
         view.addSubview(loadingIndicatorView)
@@ -172,6 +173,21 @@ final class BoxOfficeListViewController: UIViewController {
         UserDefaults.standard.set(encodedData, forKey: CellMode.identifier)
     }
     
+    private func configureRefreshControl() {
+        collectionView.refreshControl = UIRefreshControl()
+        collectionView.refreshControl?.addTarget(self,
+                                                 action: #selector(handleRefreshControl),
+                                                 for: .valueChanged)
+    }
+    
+    @objc private func handleRefreshControl() {
+        self.currentDate = Date.yesterday.convertString(isFormatted: false)
+        configureViewController()
+        configureCollectionView()
+    }
+    
+    // MARK: - Business Logic
+    
     private func fetchBoxOfficeData(completion: @escaping () -> Void) {
         guard let request = urlMaker.makeBoxOfficeURLRequest(date: currentDate) else { return }
         
@@ -199,18 +215,7 @@ final class BoxOfficeListViewController: UIViewController {
         }
     }
     
-    private func configureRefreshControl() {
-        collectionView.refreshControl = UIRefreshControl()
-        collectionView.refreshControl?.addTarget(self,
-                                                 action: #selector(handleRefreshControl),
-                                                 for: .valueChanged)
-    }
-    
-    @objc private func handleRefreshControl() {
-        self.currentDate = Date.yesterday.convertString(isFormatted: false)
-        configureViewController()
-        configureCollectionView()
-    }
+
 }
 
 extension BoxOfficeListViewController: UICollectionViewDataSource {

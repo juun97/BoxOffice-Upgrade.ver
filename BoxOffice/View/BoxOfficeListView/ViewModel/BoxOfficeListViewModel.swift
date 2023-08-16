@@ -6,3 +6,12 @@
 //
 
 import Foundation
+
+final class BoxOfficeListViewModel {
+    
+    private let useCase: BoxOfficeListUseCaseType
+    
+    init(useCase: BoxOfficeListUseCaseType = BoxOfficeListUseCase()) {
+        self.useCase = useCase
+    }
+}
