@@ -190,9 +190,21 @@ final class BoxOfficeListViewController: UIViewController {
     
     private func fetchBoxOfficeData(completion: @escaping () -> Void) {
         guard let request = urlMaker.makeBoxOfficeURLRequest(date: currentDate) else { return }
+        let decoder = DecodeManager()
+        
+        server.fetchData(request: request)
+            .subscribe(onSuccess: { data in
+                let decodedData = decoder.decodeJSON(data: data, type: BoxOffice.self)
+                guard let verifiedDecodingResult = try? self.verifyResult(result: decodedData) else { return }
+                self.boxOffice = verifiedDecodingResult
+            }, onFailure: { error in
+                print(error.localizedDescription)
+            })
+            .dispose()
+        
         
         server.startLoad(request: request, mime: "json") { [weak self] result in
-            let decoder = DecodeManager()
+            
             do {
                 guard let verifiedFetchingResult = try self?.verifyResult(result: result) else { return }
                 let decodedFile = decoder.decodeJSON(data: verifiedFetchingResult, type: BoxOffice.self)
@@ -201,9 +213,12 @@ final class BoxOfficeListViewController: UIViewController {
                 self?.boxOffice = verifiedDecodingResult
                 completion()
             } catch {
-                print(error.localizedDescription)
+                
             }
         }
+        
+
+        
     }
     
     private func verifyResult<T, E: Error>(result: Result<T, E>) throws -> T? {
