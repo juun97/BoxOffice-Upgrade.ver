@@ -8,6 +8,6 @@ target 'BoxOffice' do
   # Pods for BoxOffice
 
   pod 'RxSwift', '~> 6.5.0'
-
+  pod 'RxCocoa'
   
 end
