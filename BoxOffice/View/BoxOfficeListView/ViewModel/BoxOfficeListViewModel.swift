@@ -15,13 +15,13 @@ final class BoxOfficeListViewModel {
     private(set) var boxOffice: BoxOffice?
     private var currentDate: String = Date.yesterday.convertString(isFormatted: false)
     
-    private let _boxOffice2 = BehaviorRelay<BoxOffice?>(value: nil)
+    private let _boxOffice2 = BehaviorRelay<[DailyBoxOffice]>(value: [])
     
-    var boxOffice2: Observable<BoxOffice?> {
+    var boxOffice2: Observable<[DailyBoxOffice]> {
         return _boxOffice2.asObservable()
     }
     
-    private func updateBoxOffice(newValue: BoxOffice) {
+    private func updateBoxOffice(newValue: [DailyBoxOffice]) {
         _boxOffice2.accept(newValue)
     }
     
@@ -32,7 +32,7 @@ final class BoxOfficeListViewModel {
     func fetchData() {
         useCase.fetchBoxOfficeData(dateString: currentDate)
             .subscribe(onSuccess: { boxOffice in
-                self.boxOffice = boxOffice
+                self.updateBoxOffice(newValue: boxOffice.boxOfficeResult.dailyBoxOfficeList)
             }, onFailure: { error in
                 
             })
