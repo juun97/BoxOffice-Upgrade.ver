@@ -40,6 +40,7 @@
 		08CE13D529CAF82A00C15A16 /* NetworkError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08CE13D429CAF82A00C15A16 /* NetworkError.swift */; };
 		08CE13D629CAF82A00C15A16 /* NetworkError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08CE13D429CAF82A00C15A16 /* NetworkError.swift */; };
 		08D14BA029DBB36100382A7C /* CalendarViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08D14B9F29DBB36100382A7C /* CalendarViewController.swift */; };
+		08D9A4F32A95E97E00A37C00 /* Result+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08D9A4F22A95E97E00A37C00 /* Result+.swift */; };
 		08DA500829D16AA50015989D /* CustomCollectionViewListCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DA500729D16AA50015989D /* CustomCollectionViewListCell.swift */; };
 		08DD8EA429C9665B00DA67E2 /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD8EA329C9665B00DA67E2 /* NetworkManager.swift */; };
 		08DD8EA929C9685B00DA67E2 /* Date+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08DD8EA829C9685B00DA67E2 /* Date+.swift */; };
@@ -114,6 +115,7 @@
 		08CE13BD29CAF80100C15A16 /* Director.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Director.swift; sourceTree = "<group>"; };
 		08CE13D429CAF82A00C15A16 /* NetworkError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NetworkError.swift; sourceTree = "<group>"; };
 		08D14B9F29DBB36100382A7C /* CalendarViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarViewController.swift; sourceTree = "<group>"; };
+		08D9A4F22A95E97E00A37C00 /* Result+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Result+.swift"; sourceTree = "<group>"; };
 		08DA500729D16AA50015989D /* CustomCollectionViewListCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomCollectionViewListCell.swift; sourceTree = "<group>"; };
 		08DD8EA329C9665B00DA67E2 /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
 		08DD8EA829C9685B00DA67E2 /* Date+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+.swift"; sourceTree = "<group>"; };
@@ -292,6 +294,7 @@
 				0891E3C229D3424A00FE3AF8 /* CALayer+.swift */,
 				D0E9D0CD29DF0CB100063F90 /* Array+.swift */,
 				08EB9F7529E818C400EF38AD /* URLSession+.swift */,
+				08D9A4F22A95E97E00A37C00 /* Result+.swift */,
 			);
 			path = Extension;
 			sourceTree = "<group>";
@@ -634,6 +637,7 @@
 			files = (
 				08CE13CC29CAF80100C15A16 /* Company.swift in Sources */,
 				08CE13C429CAF80100C15A16 /* Staff.swift in Sources */,
+				08D9A4F32A95E97E00A37C00 /* Result+.swift in Sources */,
 				080213E52A8CED820023B7B0 /* DetailMovieViewModel.swift in Sources */,
 				08D14BA029DBB36100382A7C /* CalendarViewController.swift in Sources */,
 				08CE13D529CAF82A00C15A16 /* NetworkError.swift in Sources */,
