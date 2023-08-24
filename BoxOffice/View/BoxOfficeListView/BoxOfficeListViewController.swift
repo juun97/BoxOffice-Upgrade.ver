@@ -6,8 +6,28 @@
 //
 
 import UIKit
+import RxCocoa
+import RxSwift
+import RxDataSources
+
+struct MainDataSection {
+    var header: String
+    var items: [DailyBoxOffice]
+}
+
+extension MainDataSection: SectionModelType {
+    init(original: MainDataSection, items: [DailyBoxOffice]) {
+        self = original
+        self.items = items
+    }
+}
 
 final class BoxOfficeListViewController: UIViewController {
+    private let disposeBag = DisposeBag()
+    private let viewModel = BoxOfficeListViewModel()
+    private var dataSource: RxCollectionViewSectionedReloadDataSource<MainDataSection>!
+    
+    
     private let server = NetworkManager.shared
     private let urlMaker = URLRequestMaker()
     private var boxOffice: BoxOffice?
@@ -82,6 +102,13 @@ final class BoxOfficeListViewController: UIViewController {
                 self?.collectionView.refreshControl?.endRefreshing()
             }
         }
+    }
+    
+    func bind() {
+        viewModel._boxOffice2
+            .bind(to: collectionView.rx.items(dataSource: dataSource))
+            .disposed(by: disposeBag)
+        
     }
     
     private func readCellMode() {
@@ -192,15 +219,7 @@ final class BoxOfficeListViewController: UIViewController {
         guard let request = urlMaker.makeBoxOfficeURLRequest(date: currentDate) else { return }
         let decoder = DecodeManager()
         
-        server.fetchData(request: request)
-            .subscribe(onSuccess: { data in
-                let decodedData = decoder.decodeJSON(data: data, type: BoxOffice.self)
-                guard let verifiedDecodingResult = try? self.verifyResult(result: decodedData) else { return }
-                self.boxOffice = verifiedDecodingResult
-            }, onFailure: { error in
-                print(error.localizedDescription)
-            })
-            .dispose()
+        viewModel.fetchData()
         
         
         server.startLoad(request: request, mime: "json") { [weak self] result in
@@ -231,9 +250,29 @@ final class BoxOfficeListViewController: UIViewController {
     }
     
 
+    
 }
 
 extension BoxOfficeListViewController: UICollectionViewDataSource {
+
+    func configureDataSource() {
+        dataSource = RxCollectionViewSectionedReloadDataSource<MainDataSection> { dataSource, tableView, indexPath, item in
+            switch self.cellMode {
+            case .list:
+                guard let cell = self.collectionView.dequeueReusableCell(withReuseIdentifier: CustomCollectionViewListCell.identifier, for: indexPath) as? CustomCollectionViewListCell else { return CustomCollectionViewListCell() }
+                cell.configureCell(dailyBoxOffice: item)
+                
+                return cell
+            case .icon:
+                guard let cell = self.collectionView.dequeueReusableCell(withReuseIdentifier: CustomCollectionViewIconCell.identifier, for: indexPath) as? CustomCollectionViewIconCell else { return CustomCollectionViewIconCell() }
+                cell.configureCell(dailyBoxOffice: item)
+                
+                return cell
+            }
+        }
+
+    }
+    
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         guard let count = boxOffice?.boxOfficeResult.dailyBoxOfficeList.count else { return 0 }
         
