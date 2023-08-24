@@ -15,14 +15,15 @@ final class BoxOfficeListViewModel {
     private(set) var boxOffice: BoxOffice?
     private var currentDate: String = Date.yesterday.convertString(isFormatted: false)
     
-    private let _boxOffice2 = BehaviorRelay<[DailyBoxOffice]>(value: [])
+    let _boxOffice2 = BehaviorRelay<[MainDataSection]>(value: [])
     
-    var boxOffice2: Observable<[DailyBoxOffice]> {
+    var boxOffice2: Observable<[MainDataSection]> {
         return _boxOffice2.asObservable()
     }
     
     private func updateBoxOffice(newValue: [DailyBoxOffice]) {
-        _boxOffice2.accept(newValue)
+        let dataSection = newValue.map{ _ in MainDataSection(header: "main", items: newValue) }
+        _boxOffice2.accept(dataSection)
     }
     
     init(useCase: BoxOfficeListUseCaseType = BoxOfficeListUseCase()) {

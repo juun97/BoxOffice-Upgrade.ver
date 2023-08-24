@@ -49,7 +49,7 @@ final class NetworkManager {
         }.resume()
     }
     
-    func fetchData(request: URLRequest) -> Single<Data> {
+    func fetchData(request: URLRequest) -> Observable<Data> {
         return Single.create { single in
             let task = self.session.dataTask(with: request) { (data, response, error) in
                 if let error = error {
@@ -78,6 +78,6 @@ final class NetworkManager {
             
             return Disposables.create { task.cancel() }
         }
-        
+        .asObservable()
     }
 }
