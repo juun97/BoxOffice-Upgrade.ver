@@ -63,10 +63,15 @@ final class BoxOfficeListViewController: UIViewController {
         
         configureUI()
         configureLayout()
-        loadingIndicatorView.startAnimating()
+        
+        //loadingIndicatorView.startAnimating()
         configureViewController()
+        configureDataSource()
         configureCollectionView()
         configureRefreshControl()
+        
+        bind()
+        fetchData()
     }
     
     // MARK: - UILogic
@@ -90,25 +95,23 @@ final class BoxOfficeListViewController: UIViewController {
     }
     
     private func configureCollectionView() {
-        collectionView.dataSource = self
         collectionView.delegate = self
         
         readCellMode()
-        
-        fetchBoxOfficeData { [weak self] in
-            DispatchQueue.main.async {
-                self?.loadingIndicatorView.stopAnimating()
-                self?.collectionView.reloadData()
-                self?.collectionView.refreshControl?.endRefreshing()
-            }
-        }
     }
     
     func bind() {
-        viewModel._boxOffice2
+        viewModel.boxOffice
             .bind(to: collectionView.rx.items(dataSource: dataSource))
             .disposed(by: disposeBag)
         
+        collectionView.rx.modelSelected(DailyBoxOffice.self)
+            .subscribe(onNext: { model in
+                let detailMovieViewController = DetailMovieViewController(movieCode: model.movieCode)
+                
+                self.navigationController?.pushViewController(detailMovieViewController, animated: true)
+            })
+            .disposed(by: disposeBag)
     }
     
     private func readCellMode() {
@@ -125,6 +128,23 @@ final class BoxOfficeListViewController: UIViewController {
             UserDefaults.standard.removeObject(forKey: CellMode.identifier)
         } catch {
             print(error.localizedDescription)
+        }
+    }
+    
+    func configureDataSource() {
+        dataSource = RxCollectionViewSectionedReloadDataSource<MainDataSection> { dataSource, tableView, indexPath, item in
+            switch self.cellMode {
+            case .list:
+                guard let cell = self.collectionView.dequeueReusableCell(withReuseIdentifier: CustomCollectionViewListCell.identifier, for: indexPath) as? CustomCollectionViewListCell else { return CustomCollectionViewListCell() }
+                cell.configureCell(dailyBoxOffice: item)
+                
+                return cell
+            case .icon:
+                guard let cell = self.collectionView.dequeueReusableCell(withReuseIdentifier: CustomCollectionViewIconCell.identifier, for: indexPath) as? CustomCollectionViewIconCell else { return CustomCollectionViewIconCell() }
+                cell.configureCell(dailyBoxOffice: item)
+                
+                return cell
+            }
         }
     }
     
@@ -215,31 +235,11 @@ final class BoxOfficeListViewController: UIViewController {
     
     // MARK: - Business Logic
     
-    private func fetchBoxOfficeData(completion: @escaping () -> Void) {
-        guard let request = urlMaker.makeBoxOfficeURLRequest(date: currentDate) else { return }
-        let decoder = DecodeManager()
-        
-        viewModel.fetchData()
-        
-        
-        server.startLoad(request: request, mime: "json") { [weak self] result in
-            
-            do {
-                guard let verifiedFetchingResult = try self?.verifyResult(result: result) else { return }
-                let decodedFile = decoder.decodeJSON(data: verifiedFetchingResult, type: BoxOffice.self)
-                let verifiedDecodingResult = try self?.verifyResult(result: decodedFile)
-                
-                self?.boxOffice = verifiedDecodingResult
-                completion()
-            } catch {
-                
-            }
-        }
-        
-
-        
-    }
     
+    private func fetchData() {
+        viewModel.fetchData()
+    }
+
     private func verifyResult<T, E: Error>(result: Result<T, E>) throws -> T? {
         switch result {
         case .success(let data):
@@ -248,53 +248,7 @@ final class BoxOfficeListViewController: UIViewController {
             throw error
         }
     }
-    
-
-    
-}
-
-extension BoxOfficeListViewController: UICollectionViewDataSource {
-
-    func configureDataSource() {
-        dataSource = RxCollectionViewSectionedReloadDataSource<MainDataSection> { dataSource, tableView, indexPath, item in
-            switch self.cellMode {
-            case .list:
-                guard let cell = self.collectionView.dequeueReusableCell(withReuseIdentifier: CustomCollectionViewListCell.identifier, for: indexPath) as? CustomCollectionViewListCell else { return CustomCollectionViewListCell() }
-                cell.configureCell(dailyBoxOffice: item)
-                
-                return cell
-            case .icon:
-                guard let cell = self.collectionView.dequeueReusableCell(withReuseIdentifier: CustomCollectionViewIconCell.identifier, for: indexPath) as? CustomCollectionViewIconCell else { return CustomCollectionViewIconCell() }
-                cell.configureCell(dailyBoxOffice: item)
-                
-                return cell
-            }
-        }
-
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        guard let count = boxOffice?.boxOfficeResult.dailyBoxOfficeList.count else { return 0 }
-        
-        return count
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let dailyBoxOffice = self.boxOffice?.boxOfficeResult.dailyBoxOfficeList[index: indexPath.item]
-        
-        switch cellMode {
-        case .list:
-            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CustomCollectionViewListCell.identifier, for: indexPath) as? CustomCollectionViewListCell else { return CustomCollectionViewListCell() }
-            cell.configureCell(dailyBoxOffice: dailyBoxOffice)
-            
-            return cell
-        case .icon:
-            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CustomCollectionViewIconCell.identifier, for: indexPath) as? CustomCollectionViewIconCell else { return CustomCollectionViewIconCell() }
-            cell.configureCell(dailyBoxOffice: dailyBoxOffice)
-            
-            return cell
-        }
-    }
+ 
 }
 
 extension BoxOfficeListViewController: UICollectionViewDelegateFlowLayout {
