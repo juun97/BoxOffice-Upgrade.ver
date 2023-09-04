@@ -8,8 +8,11 @@
 import Foundation
 
 struct BoxOffice: Decodable {
-    
     var id = UUID()
     let boxOfficeResult: BoxOfficeResult
     
+    private enum CodingKeys: String, CodingKey {
+        case boxOfficeResult
+    }
+
 }
