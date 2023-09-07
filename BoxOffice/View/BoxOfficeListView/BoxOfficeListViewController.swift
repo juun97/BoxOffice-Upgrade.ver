@@ -29,6 +29,7 @@ final class BoxOfficeListViewController: UIViewController {
     
     private var currentDate: String = Date.yesterday.convertString(isFormatted: false)
 
+    //MARK: - UI
     private let loadingIndicatorView: UIActivityIndicatorView = {
         let loadingIndicatorView = UIActivityIndicatorView(style: .large)
         loadingIndicatorView.color = .systemGray3
@@ -53,6 +54,23 @@ final class BoxOfficeListViewController: UIViewController {
         return collectionView
     }()
     
+    let selectDateButton: UIBarButtonItem = {
+        let button = UIBarButtonItem()
+        button.title = "날짜 선택"
+        button.style = .plain
+        
+        return button
+    }()
+    
+    let selectModeButton: UIBarButtonItem = {
+        let button = UIBarButtonItem()
+        button.title = "화면 모드 변경"
+        button.style = .plain
+        
+        return button
+    }()
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -60,7 +78,9 @@ final class BoxOfficeListViewController: UIViewController {
         configureLayout()
         
         //loadingIndicatorView.startAnimating()
-        configureViewController()
+        configureRootView()
+        configureNavigationController()
+        configureToolBar()
         configureDataSource()
         configureCollectionView()
         configureRefreshControl()
@@ -108,7 +128,18 @@ final class BoxOfficeListViewController: UIViewController {
             })
             .disposed(by: disposeBag)
         
+        selectDateButton.rx.tap
+            .bind {
+                
+            }
+            .disposed(by: disposeBag)
         
+        selectModeButton.rx.tap
+            .bind {
+                
+            }
+            .disposed(by: disposeBag)
+            
     }
     
     func configureDataSource() {
@@ -128,34 +159,23 @@ final class BoxOfficeListViewController: UIViewController {
         }
     }
     
-    private func configureViewController() {
+    private func configureRootView() {
         view.backgroundColor = .white
-        title = currentDate.formatDateString(format: DateFormat.yearMonthDay)
-        
-        let selectDateButton: UIBarButtonItem = {
-            let button = UIBarButtonItem(title: "날짜 선택",
-                                         style: .plain,
-                                         target: self,
-                                         action: #selector(presentSelectDateModal))
-            return button
-        }()
+        self.title = currentDate.formatDateString(format: DateFormat.yearMonthDay)
+    }
+    
+    private func configureNavigationController() {
         self.navigationItem.rightBarButtonItem = selectDateButton
-        
         self.navigationController?.isToolbarHidden = false
-        
-        let selectModeButton: UIBarButtonItem = {
-            let button = UIBarButtonItem(title: "화면 모드 변경",
-                                         style: .plain,
-                                         target: self,
-                                         action: #selector(presentCellChangeActionSheet))
-            return button
-        }()
-        
+    }
+    
+    private func configureToolBar() {
         let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: self, action: nil)
         self.toolbarItems = [flexibleSpace, selectModeButton, flexibleSpace]
     }
     
-    @objc private func presentSelectDateModal() {
+    
+    private func presentSelectDateModal() {
         let modal = CalendarViewController(currentDate)
         modal.delegate = self
         
@@ -166,6 +186,7 @@ final class BoxOfficeListViewController: UIViewController {
         let actionSheet = UIAlertController(title: "화면모드변경", message: nil, preferredStyle: .actionSheet)
         let actionDefault = createAlertAction()
         let actionCancel = UIAlertAction(title: "취소", style: .cancel)
+        
         
         actionSheet.addAction(actionDefault)
         actionSheet.addAction(actionCancel)
@@ -191,7 +212,7 @@ final class BoxOfficeListViewController: UIViewController {
     
     @objc private func handleRefreshControl() {
         self.currentDate = Date.yesterday.convertString(isFormatted: false)
-        configureViewController()
+        configureRootView()
         configureCollectionView()
     }
     
@@ -256,7 +277,7 @@ extension BoxOfficeListViewController: CalendarViewControllerDelegate {
     func deliverData(_ data: String) {
         self.currentDate = data
         
-        configureViewController()
+        configureRootView()
         configureCollectionView()
     }
 }
