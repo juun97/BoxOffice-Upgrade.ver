@@ -129,17 +129,32 @@ final class BoxOfficeListViewController: UIViewController {
             .disposed(by: disposeBag)
         
         selectDateButton.rx.tap
-            .bind {
+            .bind { [weak self] _ in
+                guard let self = self else { return }
                 
+                let modal = CalendarViewController(currentDate)
+                modal.delegate = self
+                
+                self.present(modal, animated: true)
             }
             .disposed(by: disposeBag)
         
         selectModeButton.rx.tap
-            .bind {
+            .bind { [weak self] _ in
+                guard let self = self else { return }
                 
+                AlertBuilder()
+                    .preferredStyle(.actionSheet)
+                    .withTitle("화면모드 변경")
+                    .addAction(self.viewModel.cellMode.value.alertText,style: .default, handler: ({ _ in
+                        self.viewModel.changeCellMode()
+                        self.collectionView.reloadData()
+                    }))
+                    .addAction("취소", style: .cancel)
+                    .show(in: self)
             }
             .disposed(by: disposeBag)
-            
+        
     }
     
     func configureDataSource() {
@@ -173,35 +188,6 @@ final class BoxOfficeListViewController: UIViewController {
         let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: self, action: nil)
         self.toolbarItems = [flexibleSpace, selectModeButton, flexibleSpace]
     }
-    
-    
-    private func presentSelectDateModal() {
-        let modal = CalendarViewController(currentDate)
-        modal.delegate = self
-        
-        self.present(modal, animated: true)
-    }
-    
-    @objc private func presentCellChangeActionSheet() {
-        let actionSheet = UIAlertController(title: "화면모드변경", message: nil, preferredStyle: .actionSheet)
-        let actionDefault = createAlertAction()
-        let actionCancel = UIAlertAction(title: "취소", style: .cancel)
-        
-        
-        actionSheet.addAction(actionDefault)
-        actionSheet.addAction(actionCancel)
-        
-        self.present(actionSheet, animated: true)
-    }
-    
-    private func createAlertAction() -> UIAlertAction {
-        var action = UIAlertAction(title: viewModel.cellMode.value.alertText, style: .default) { [weak self] _ in
-            self?.viewModel.changeCellMode()
-            self?.collectionView.reloadData()
-        }
-
-        return action
-    }
 
     private func configureRefreshControl() {
         collectionView.refreshControl = UIRefreshControl()
@@ -216,7 +202,6 @@ final class BoxOfficeListViewController: UIViewController {
         configureCollectionView()
     }
     
-    // MARK: - Business Logic
     private func fetchData() {
         viewModel.fetchData()
     }
@@ -229,7 +214,7 @@ extension BoxOfficeListViewController: UICollectionViewDelegateFlowLayout {
         case .list:
             return collectionViewWithList()
         case .icon:
-            return  collectionViewWithIcon(collectionViewLayout: collectionViewLayout)
+            return collectionViewWithIcon(collectionViewLayout: collectionViewLayout)
         }
         
     }
