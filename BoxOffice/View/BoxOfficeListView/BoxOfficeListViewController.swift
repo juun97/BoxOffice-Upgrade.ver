@@ -181,13 +181,7 @@ final class BoxOfficeListViewController: UIViewController {
 
         return action
     }
-    
-    private func registerCellMode() {
-        let encoder = JSONEncoder()
-        let encodedData = try? encoder.encode(cellMode)
-        UserDefaults.standard.set(encodedData, forKey: CellMode.identifier)
-    }
-    
+
     private func configureRefreshControl() {
         collectionView.refreshControl = UIRefreshControl()
         collectionView.refreshControl?.addTarget(self,
