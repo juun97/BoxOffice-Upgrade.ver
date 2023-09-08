@@ -26,8 +26,6 @@ final class BoxOfficeListViewController: UIViewController {
     private let disposeBag = DisposeBag()
     private let viewModel = BoxOfficeListViewModel()
     private var dataSource: RxCollectionViewSectionedReloadDataSource<MainDataSection>!
-    
-    private var currentDate: String = Date.yesterday.convertString(isFormatted: false)
 
     //MARK: - UI
     private let loadingIndicatorView: UIActivityIndicatorView = {
@@ -109,15 +107,16 @@ final class BoxOfficeListViewController: UIViewController {
         ])
     }
     
-    private func configureCollectionView() {
-        collectionView.delegate = self
-        
-        viewModel.readCellMode()
-    }
+
     
     func bind() {
         viewModel.boxOffice
             .bind(to: collectionView.rx.items(dataSource: dataSource))
+            .disposed(by: disposeBag)
+        
+        viewModel.currentDate
+            .map { $0.convertString(isFormatted: true) }
+            .bind(to: rx.title)
             .disposed(by: disposeBag)
         
         collectionView.rx.modelSelected(DailyBoxOffice.self)
@@ -132,7 +131,7 @@ final class BoxOfficeListViewController: UIViewController {
             .bind { [weak self] _ in
                 guard let self = self else { return }
                 
-                let modal = CalendarViewController(currentDate)
+                let modal = CalendarViewController(viewModel.currentDate.value)
                 modal.delegate = self
                 
                 self.present(modal, animated: true)
@@ -146,7 +145,7 @@ final class BoxOfficeListViewController: UIViewController {
                 AlertBuilder()
                     .preferredStyle(.actionSheet)
                     .withTitle("화면모드 변경")
-                    .addAction(self.viewModel.cellMode.value.alertText,style: .default, handler: ({ _ in
+                    .addAction(self.viewModel.cellMode.alertText,style: .default, handler: ({ _ in
                         self.viewModel.changeCellMode()
                         self.collectionView.reloadData()
                     }))
@@ -157,9 +156,13 @@ final class BoxOfficeListViewController: UIViewController {
         
     }
     
+    private func configureCollectionView() {
+        collectionView.delegate = self
+    }
+    
     func configureDataSource() {
         dataSource = RxCollectionViewSectionedReloadDataSource<MainDataSection> { dataSource, tableView, indexPath, item in
-            switch self.viewModel.cellMode.value {
+            switch self.viewModel.cellMode {
             case .list:
                 guard let cell = self.collectionView.dequeueReusableCell(withReuseIdentifier: CustomCollectionViewListCell.identifier, for: indexPath) as? CustomCollectionViewListCell else { return CustomCollectionViewListCell() }
                 cell.configureCell(dailyBoxOffice: item)
@@ -176,7 +179,7 @@ final class BoxOfficeListViewController: UIViewController {
     
     private func configureRootView() {
         view.backgroundColor = .white
-        self.title = currentDate.formatDateString(format: DateFormat.yearMonthDay)
+        //self.title = viewModel.currentDate.value.convertString(isFormatted: true)
     }
     
     private func configureNavigationController() {
@@ -197,9 +200,7 @@ final class BoxOfficeListViewController: UIViewController {
     }
     
     @objc private func handleRefreshControl() {
-        self.currentDate = Date.yesterday.convertString(isFormatted: false)
         configureRootView()
-        configureCollectionView()
     }
     
     private func fetchData() {
@@ -210,7 +211,7 @@ final class BoxOfficeListViewController: UIViewController {
 extension BoxOfficeListViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         
-        switch viewModel.cellMode.value {
+        switch viewModel.cellMode {
         case .list:
             return collectionViewWithList()
         case .icon:
@@ -242,28 +243,28 @@ extension BoxOfficeListViewController: UICollectionViewDelegateFlowLayout {
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
-        guard viewModel.cellMode.value == .icon else { return UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0) }
+        guard viewModel.cellMode == .icon else { return UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0) }
         
         return UIEdgeInsets(top: 10, left: 15, bottom: 10, right: 15)
     }
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
-        guard viewModel.cellMode.value == .icon else { return 0 }
+        guard viewModel.cellMode == .icon else { return 0 }
         
         return 15.0
     }
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
-        guard viewModel.cellMode.value == .icon else { return 0 }
+        guard viewModel.cellMode == .icon else { return 0 }
         
         return 10.0
     }
 }
 
 extension BoxOfficeListViewController: CalendarViewControllerDelegate {
-    func deliverData(_ data: String) {
-        self.currentDate = data
-        
-        configureRootView()
-        configureCollectionView()
+    func deliverData(_ date: Date) {
+        viewModel.updateDate(date)
+        collectionView.reloadData()
+//        configureRootView()
+//        configureCollectionView()
     }
 }
 
