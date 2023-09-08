@@ -8,11 +8,11 @@
 import UIKit
 
 protocol CalendarViewControllerDelegate: AnyObject {
-    func deliverData(_ data: String)
+    func deliverData(_ data: Date)
 }
 
 final class CalendarViewController: UIViewController {
-    private var date: String
+    private var date: Date
     weak var delegate: CalendarViewControllerDelegate?
     
     private let calendarView: UICalendarView = {
@@ -26,7 +26,7 @@ final class CalendarViewController: UIViewController {
         return calendarView
     }()
     
-    init(_ date: String) {
+    init(_ date: Date) {
         self.date = date
         
         super.init(nibName: nil, bundle: nil)
@@ -62,16 +62,19 @@ final class CalendarViewController: UIViewController {
     
     private func configureSelectedDate() {
         let dateSelection = UICalendarSelectionSingleDate(delegate: self)
-        let dateComponents = date.formatDateString(format: DateFormat.yearMonthDay)?.components(separatedBy: "-")
+        let dateComponents = date.convertString(isFormatted: true)
+            .components(separatedBy: "-")
+            .compactMap { Int($0) }
         
-        guard let year = dateComponents?[index: 0],
-              let month = dateComponents?[index: 1],
-              let day = dateComponents?[index: 2] else { return }
+        
+        guard let year = dateComponents[index: 0],
+              let month = dateComponents[index: 1],
+              let day = dateComponents[index: 2] else { return }
         
         let selectedDate = DateComponents(calendar: Calendar(identifier: .gregorian),
-                                          year: Int(year),
-                                          month: Int(month),
-                                          day: Int(day))
+                                          year: year,
+                                          month: month,
+                                          day: day)
         
         calendarView.selectionBehavior = dateSelection
         dateSelection.selectedDate = selectedDate
@@ -100,8 +103,8 @@ final class CalendarViewController: UIViewController {
 extension CalendarViewController: UICalendarSelectionSingleDateDelegate {
     func dateSelection(_ selection: UICalendarSelectionSingleDate, didSelectDate dateComponents: DateComponents?) {
         guard let date = dateComponents?.date else { return }
-        let selectedDate = date.convertString(isFormatted: false)
-        self.date = selectedDate
+   
+        self.date = date
         self.dismiss(animated: true)
     }
 }

@@ -15,7 +15,7 @@ enum BoxOfficeListUseCaseError: Error {
 }
 
 protocol BoxOfficeListUseCaseType {
-    func fetchBoxOfficeData(dateString: String) -> Observable<[DailyBoxOffice]>
+    func fetchBoxOfficeData(date: Date) -> Observable<[DailyBoxOffice]>
     func readCellMode() -> CellMode
     func saveCellMode(_ cellMode: CellMode)
 }
@@ -23,7 +23,9 @@ protocol BoxOfficeListUseCaseType {
 final class BoxOfficeListUseCase: BoxOfficeListUseCaseType {
     private let urlMaker = URLRequestMaker()
     
-    func fetchBoxOfficeData(dateString: String) -> Observable<[DailyBoxOffice]> {
+    func fetchBoxOfficeData(date: Date) -> Observable<[DailyBoxOffice]> {
+        let dateString = date.convertString(isFormatted: false)
+        
         guard let request = self.urlMaker.makeBoxOfficeURLRequest(date: dateString) else {
             return .error(BoxOfficeListUseCaseError.invalidRequest)
         }
