@@ -83,7 +83,8 @@ final class BoxOfficeListViewController: UIViewController {
         configureCollectionView()
         configureRefreshControl()
         
-        bind()
+        bindUI()
+        bindAction()
         fetchData()
     }
     
@@ -109,7 +110,7 @@ final class BoxOfficeListViewController: UIViewController {
     
 
     
-    func bind() {
+    func bindUI() {
         viewModel.boxOffice
             .bind(to: collectionView.rx.items(dataSource: dataSource))
             .disposed(by: disposeBag)
@@ -118,11 +119,14 @@ final class BoxOfficeListViewController: UIViewController {
             .map { $0.convertString(isFormatted: true) }
             .bind(to: rx.title)
             .disposed(by: disposeBag)
-        
+    }
+    
+    func bindAction() {
         collectionView.rx.modelSelected(DailyBoxOffice.self)
-            .subscribe(onNext: { model in
-                let detailMovieViewController = DetailMovieViewController(movieCode: model.movieCode)
+            .subscribe(onNext: { [weak self] model in
+                guard let self = self else { return }
                 
+                let detailMovieViewController = DetailMovieViewController(movieCode: model.movieCode)
                 self.navigationController?.pushViewController(detailMovieViewController, animated: true)
             })
             .disposed(by: disposeBag)
@@ -153,8 +157,8 @@ final class BoxOfficeListViewController: UIViewController {
                     .show(in: self)
             }
             .disposed(by: disposeBag)
-        
     }
+    
     
     private func configureCollectionView() {
         collectionView.delegate = self
@@ -263,8 +267,6 @@ extension BoxOfficeListViewController: CalendarViewControllerDelegate {
     func deliverData(_ date: Date) {
         viewModel.updateDate(date)
         collectionView.reloadData()
-//        configureRootView()
-//        configureCollectionView()
     }
 }
 
