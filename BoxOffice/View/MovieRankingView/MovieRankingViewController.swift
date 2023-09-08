@@ -1,5 +1,5 @@
 //
-//  BoxOfficeListViewController.swift
+//  MovieRankingViewController.swift
 //  BoxOffice
 //
 //  Created by Rhode, Rilla on 2023/03/20.
@@ -68,7 +68,6 @@ final class MovieRankingViewController: UIViewController {
         return button
     }()
     
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -107,8 +106,6 @@ final class MovieRankingViewController: UIViewController {
             collectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
         ])
     }
-    
-
     
     func bindUI() {
         viewModel.boxOffice
@@ -158,7 +155,6 @@ final class MovieRankingViewController: UIViewController {
             }
             .disposed(by: disposeBag)
     }
-    
     
     private func configureCollectionView() {
         collectionView.delegate = self
