@@ -22,9 +22,9 @@ extension MainDataSection: SectionModelType {
     }
 }
 
-final class BoxOfficeListViewController: UIViewController {
+final class MovieRankingViewController: UIViewController {
     private let disposeBag = DisposeBag()
-    private let viewModel = BoxOfficeListViewModel()
+    private let viewModel = MovieRankingViewModel()
     private var dataSource: RxCollectionViewSectionedReloadDataSource<MainDataSection>!
 
     //MARK: - UI
@@ -212,7 +212,7 @@ final class BoxOfficeListViewController: UIViewController {
     }
 }
 
-extension BoxOfficeListViewController: UICollectionViewDelegateFlowLayout {
+extension MovieRankingViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         
         switch viewModel.cellMode {
@@ -263,7 +263,7 @@ extension BoxOfficeListViewController: UICollectionViewDelegateFlowLayout {
     }
 }
 
-extension BoxOfficeListViewController: CalendarViewControllerDelegate {
+extension MovieRankingViewController: CalendarViewControllerDelegate {
     func deliverData(_ date: Date) {
         viewModel.updateDate(date)
         collectionView.reloadData()

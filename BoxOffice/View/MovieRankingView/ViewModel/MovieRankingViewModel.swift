@@ -1,5 +1,5 @@
 //
-//  BoxOfficeListViewModel.swift
+//  MovieRankingViewModel.swift
 //  BoxOffice
 //
 //  Created by 김성준 on 2023/08/16.
@@ -9,9 +9,9 @@ import Foundation
 import RxSwift
 import RxCocoa
 
-final class BoxOfficeListViewModel {
+final class MovieRankingViewModel {
     private let disposeBag: DisposeBag = .init()
-    private let useCase: BoxOfficeListUseCaseType
+    private let useCase: MovieRankingUseCaseType
     
     var currentDate: BehaviorRelay<Date> = .init(value: .yesterday)
     private let _boxOffice: BehaviorRelay<[MainDataSection]> = .init(value: [])
@@ -23,7 +23,7 @@ final class BoxOfficeListViewModel {
         return useCase.readCellMode()
     }
     
-    init(useCase: BoxOfficeListUseCaseType = BoxOfficeListUseCase()) {
+    init(useCase: MovieRankingUseCaseType = MovieRankingUseCase()) {
         self.useCase = useCase
     }
     

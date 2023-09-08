@@ -1,5 +1,5 @@
 //
-//  BoxOfficeListUseCase.swift
+//  MovieRankingUseCase.swift
 //  BoxOffice
 //
 //  Created by 김성준 on 2023/08/16.
@@ -8,26 +8,26 @@
 import Foundation
 import RxSwift
 
-enum BoxOfficeListUseCaseError: Error {
+enum MovieRankingUseCaseError: Error {
     case networkError(NetworkError)
     case decodeError
     case invalidRequest
 }
 
-protocol BoxOfficeListUseCaseType {
+protocol MovieRankingUseCaseType {
     func fetchBoxOfficeData(date: Date) -> Observable<[DailyBoxOffice]>
     func readCellMode() -> CellMode
     func saveCellMode(_ cellMode: CellMode)
 }
 
-final class BoxOfficeListUseCase: BoxOfficeListUseCaseType {
+final class MovieRankingUseCase: MovieRankingUseCaseType {
     private let urlMaker = URLRequestMaker()
     
     func fetchBoxOfficeData(date: Date) -> Observable<[DailyBoxOffice]> {
         let dateString = date.convertString(isFormatted: false)
         
         guard let request = self.urlMaker.makeBoxOfficeURLRequest(date: dateString) else {
-            return .error(BoxOfficeListUseCaseError.invalidRequest)
+            return .error(MovieRankingUseCaseError.invalidRequest)
         }
         
         return NetworkManager.shared.fetchData(request: request)
