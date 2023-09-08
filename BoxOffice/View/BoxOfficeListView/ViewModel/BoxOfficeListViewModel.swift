@@ -10,24 +10,25 @@ import RxSwift
 import RxCocoa
 
 final class BoxOfficeListViewModel {
-    
+    private let disposeBag: DisposeBag = .init()
     private let useCase: BoxOfficeListUseCaseType
-    private var currentDate: String = Date.yesterday.convertString(isFormatted: false)
-    private let disposeBag = DisposeBag()
     
-    private let _boxOffice = BehaviorRelay<[MainDataSection]>(value: [])
+    var currentDate: BehaviorRelay<Date> = .init(value: .yesterday)
+    private let _boxOffice: BehaviorRelay<[MainDataSection]> = .init(value: [])
     var boxOffice: Observable<[MainDataSection]> {
         return _boxOffice.asObservable()
     }
     
-    let cellMode = BehaviorRelay<CellMode>(value: .list)
+    var cellMode: CellMode {
+        return useCase.readCellMode()
+    }
     
     init(useCase: BoxOfficeListUseCaseType = BoxOfficeListUseCase()) {
         self.useCase = useCase
     }
     
     func fetchData() {
-        useCase.fetchBoxOfficeData(dateString: currentDate)
+        useCase.fetchBoxOfficeData(date: currentDate.value)
             .subscribe(onNext: { boxOfficeList in
                 self.updateBoxOffice(newValue: boxOfficeList)
             }, onError: { error in
@@ -36,29 +37,21 @@ final class BoxOfficeListViewModel {
             .disposed(by: disposeBag)
     }
     
-    func readCellMode() {
-        let cellMode = useCase.readCellMode()
-        updateCellMode(newValue: cellMode)
+    func changeCellMode() {
+        switch cellMode {
+        case .list:
+            useCase.saveCellMode(.icon)
+        case .icon:
+            useCase.saveCellMode(.list)
+        }
     }
     
-    func changeCellMode() {
-        switch cellMode.value {
-        case .list:
-            cellMode.accept(.icon)
-        case .icon:
-            cellMode.accept(.list)
-        }
-        
-        useCase.saveCellMode(cellMode.value)
+    func updateDate(_ date: Date) {
+        currentDate.accept(date)
     }
     
     private func updateBoxOffice(newValue: [DailyBoxOffice]) {
         let dataSection =  MainDataSection(header: "main", items: newValue)
         _boxOffice.accept([dataSection])
     }
-    
-    private func updateCellMode(newValue: CellMode) {
-        cellMode.accept(newValue)
-    }
-    
 }
