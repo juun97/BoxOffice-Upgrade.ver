@@ -9,7 +9,18 @@ import Foundation
 import RxSwift
 import RxCocoa
 
-final class MovieRankingViewModel {
+final class MovieRankingViewModel: NSObject, ViewModelType {
+    typealias Input = MovieRankingViewInput
+    typealias Output = MovieRankingViewOutput
+    
+    struct MovieRankingViewInput {
+        let willAppearView: Observable<Bool>
+    }
+    
+    struct MovieRankingViewOutput {
+        let boxOffice: Observable<[MainDataSection]>
+    }
+    
     private let disposeBag: DisposeBag = .init()
     private let useCase: MovieRankingUseCaseType
     
@@ -25,6 +36,19 @@ final class MovieRankingViewModel {
     
     init(useCase: MovieRankingUseCaseType = MovieRankingUseCase()) {
         self.useCase = useCase
+    }
+    
+    func transform(_ input: MovieRankingViewInput) -> MovieRankingViewOutput {
+        let boxOffice = input.willAppearView
+            .withUnretained(self)
+            .flatMap { owner, _ in
+                owner.useCase.fetchBoxOfficeData(date: owner.currentDate.value)
+            }
+            .map { boxOfficeList in
+                [MainDataSection(header: "main", items: boxOfficeList)]
+            }
+        
+        return Output(boxOffice: boxOffice)
     }
     
     func fetchData() {
@@ -53,5 +77,11 @@ final class MovieRankingViewModel {
     private func updateBoxOffice(newValue: [DailyBoxOffice]) {
         let dataSection =  MainDataSection(header: "main", items: newValue)
         _boxOffice.accept([dataSection])
+    }
+}
+
+extension MovieRankingViewModel: CalendarViewControllerDelegate {
+    func deliverData(_ data: Date) {
+        updateDate(data)
     }
 }
