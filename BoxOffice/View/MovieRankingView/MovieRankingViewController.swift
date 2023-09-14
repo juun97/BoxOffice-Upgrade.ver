@@ -9,10 +9,17 @@ import UIKit
 import RxCocoa
 import RxSwift
 import RxDataSources
+import RxViewController
 
-struct MainDataSection {
+struct MainDataSection: ObservableConvertibleType {
+    typealias Element = MainDataSection
+    
     var header: String
     var items: [DailyBoxOffice]
+    
+    func asObservable() -> Observable<MainDataSection> {
+        return Observable.just(self)
+    }
 }
 
 extension MainDataSection: SectionModelType {
@@ -67,7 +74,7 @@ final class MovieRankingViewController: UIViewController {
         
         return button
     }()
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -82,7 +89,7 @@ final class MovieRankingViewController: UIViewController {
         configureCollectionView()
         configureRefreshControl()
         
-        bindUI()
+        bindState()
         bindAction()
         fetchData()
     }
@@ -107,42 +114,53 @@ final class MovieRankingViewController: UIViewController {
         ])
     }
     
-    func bindUI() {
-        viewModel.boxOffice
-            .bind(to: collectionView.rx.items(dataSource: dataSource))
-            .disposed(by: disposeBag)
-        
+    func bindState() {
+//        viewModel.boxOffice
+//            .bind(to: collectionView.rx.items(dataSource: dataSource))
+//            .disposed(by: disposeBag)
+//
         viewModel.currentDate
             .map { $0.convertString(isFormatted: true) }
             .bind(to: rx.title)
             .disposed(by: disposeBag)
+        
+        let viewWillAppear = self.rx.viewWillAppear.asObservable()
+        
+        let input = MovieRankingViewModel.Input(willAppearView: viewWillAppear)
+        let output = viewModel.transform(input)
+        
+        output.boxOffice
+            .bind(to: collectionView.rx.items(dataSource: dataSource))
+            .disposed(by: disposeBag)
     }
     
     func bindAction() {
+        let dd = collectionView.rx.modelSelected(DailyBoxOffice.self)
+        
+        
+        
         collectionView.rx.modelSelected(DailyBoxOffice.self)
-            .subscribe(onNext: { [weak self] model in
-                guard let self = self else { return }
-                
+            .withUnretained(self)
+            .subscribe(onNext: { owner, model in
+           
                 let detailMovieViewController = DetailMovieViewController(movieCode: model.movieCode)
                 self.navigationController?.pushViewController(detailMovieViewController, animated: true)
             })
             .disposed(by: disposeBag)
         
         selectDateButton.rx.tap
-            .bind { [weak self] _ in
-                guard let self = self else { return }
+            .withUnretained(self)
+            .bind { owner, _ in
+                let modal = CalendarViewController(owner.viewModel.currentDate.value)
+                modal.delegate = owner
                 
-                let modal = CalendarViewController(viewModel.currentDate.value)
-                modal.delegate = self
-                
-                self.present(modal, animated: true)
+                owner.present(modal, animated: true)
             }
             .disposed(by: disposeBag)
         
         selectModeButton.rx.tap
-            .bind { [weak self] _ in
-                guard let self = self else { return }
-                
+            .withUnretained(self)
+            .bind { owner, _ in
                 AlertBuilder()
                     .preferredStyle(.actionSheet)
                     .withTitle("화면모드 변경")
