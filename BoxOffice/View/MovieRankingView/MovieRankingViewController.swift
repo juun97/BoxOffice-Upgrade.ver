@@ -11,19 +11,19 @@ import RxSwift
 import RxDataSources
 import RxViewController
 
-struct MainDataSection: ObservableConvertibleType {
-    typealias Element = MainDataSection
+struct MovieRankingViewDataSection: ObservableConvertibleType {
+    typealias Element = MovieRankingViewDataSection
     
     var header: String
     var items: [DailyBoxOffice]
     
-    func asObservable() -> Observable<MainDataSection> {
+    func asObservable() -> Observable<MovieRankingViewDataSection> {
         return Observable.just(self)
     }
 }
 
-extension MainDataSection: SectionModelType {
-    init(original: MainDataSection, items: [DailyBoxOffice]) {
+extension MovieRankingViewDataSection: SectionModelType {
+    init(original: MovieRankingViewDataSection, items: [DailyBoxOffice]) {
         self = original
         self.items = items
     }
@@ -32,7 +32,7 @@ extension MainDataSection: SectionModelType {
 final class MovieRankingViewController: UIViewController {
     private let disposeBag = DisposeBag()
     private let viewModel = MovieRankingViewModel()
-    private var dataSource: RxCollectionViewSectionedReloadDataSource<MainDataSection>!
+    private var dataSource: RxCollectionViewSectionedReloadDataSource<MovieRankingViewDataSection>!
 
     //MARK: - UI
     private let loadingIndicatorView: UIActivityIndicatorView = {
@@ -89,9 +89,7 @@ final class MovieRankingViewController: UIViewController {
         configureCollectionView()
         configureRefreshControl()
         
-        bindState()
-        bindAction()
-        fetchData()
+        bind()
     }
     
     // MARK: - UILogic
@@ -114,62 +112,56 @@ final class MovieRankingViewController: UIViewController {
         ])
     }
     
-    func bindState() {
-//        viewModel.boxOffice
-//            .bind(to: collectionView.rx.items(dataSource: dataSource))
-//            .disposed(by: disposeBag)
-//
-        viewModel.currentDate
-            .map { $0.convertString(isFormatted: true) }
-            .bind(to: rx.title)
-            .disposed(by: disposeBag)
+    func bind() {
+        let willAppearView = self.rx.viewWillAppear.asObservable()
+        let didModelSelected = collectionView.rx.modelSelected(DailyBoxOffice.self).asObservable()
+        let didTapSelectDateButton = selectDateButton.rx.tap.asObservable()
+        let didTapSelectModeButton = selectModeButton.rx.tap.asObservable()
         
-        let viewWillAppear = self.rx.viewWillAppear.asObservable()
-        
-        let input = MovieRankingViewModel.Input(willAppearView: viewWillAppear)
+        let input = MovieRankingViewModel.Input(willAppearView: willAppearView,
+                                                didModelSelected: didModelSelected,
+                                                didTapSelectDateButton: didTapSelectDateButton,
+                                                didTapSelectModeButton: didTapSelectModeButton)
         let output = viewModel.transform(input)
         
         output.boxOffice
+            .observe(on: MainScheduler.instance)
             .bind(to: collectionView.rx.items(dataSource: dataSource))
             .disposed(by: disposeBag)
-    }
-    
-    func bindAction() {
-        let dd = collectionView.rx.modelSelected(DailyBoxOffice.self)
         
-        
-        
-        collectionView.rx.modelSelected(DailyBoxOffice.self)
-            .withUnretained(self)
-            .subscribe(onNext: { owner, model in
-           
-                let detailMovieViewController = DetailMovieViewController(movieCode: model.movieCode)
-                self.navigationController?.pushViewController(detailMovieViewController, animated: true)
-            })
+        output.currentDate
+            .observe(on: MainScheduler.instance)
+            .map { $0.convertString(isFormatted: true)}
+            .bind(to: rx.title)
             .disposed(by: disposeBag)
         
-        selectDateButton.rx.tap
+        output.detailMovieViewController
             .withUnretained(self)
-            .bind { owner, _ in
-                let modal = CalendarViewController(owner.viewModel.currentDate.value)
-                modal.delegate = owner
-                
-                owner.present(modal, animated: true)
+            .subscribe { owner, detailMovieViewController in
+                owner.navigationController?.pushViewController(detailMovieViewController, animated: true)
             }
             .disposed(by: disposeBag)
         
-        selectModeButton.rx.tap
+        output.calendarViewController
             .withUnretained(self)
-            .bind { owner, _ in
-                AlertBuilder()
+            .subscribe { owner, calendarViewController in
+                calendarViewController.delegate = owner
+                owner.present(calendarViewController, animated: true)
+            }
+            .disposed(by: disposeBag)
+        
+        output.actionSheet
+            .withUnretained(self)
+            .subscribe { owner, actionSheet in
+                actionSheet
                     .preferredStyle(.actionSheet)
                     .withTitle("화면모드 변경")
-                    .addAction(self.viewModel.cellMode.alertText,style: .default, handler: ({ _ in
-                        self.viewModel.changeCellMode()
-                        self.collectionView.reloadData()
+                    .addAction(owner.viewModel.cellMode.alertText,style: .default, handler: ({ _ in
+                        owner.viewModel.changeCellMode()
+                        owner.collectionView.reloadData()
                     }))
                     .addAction("취소", style: .cancel)
-                    .show(in: self)
+                    .show(in: owner)
             }
             .disposed(by: disposeBag)
     }
@@ -179,7 +171,7 @@ final class MovieRankingViewController: UIViewController {
     }
     
     func configureDataSource() {
-        dataSource = RxCollectionViewSectionedReloadDataSource<MainDataSection> { dataSource, tableView, indexPath, item in
+        dataSource = RxCollectionViewSectionedReloadDataSource<MovieRankingViewDataSection> { dataSource, tableView, indexPath, item in
             switch self.viewModel.cellMode {
             case .list:
                 guard let cell = self.collectionView.dequeueReusableCell(withReuseIdentifier: CustomCollectionViewListCell.identifier, for: indexPath) as? CustomCollectionViewListCell else { return CustomCollectionViewListCell() }
@@ -219,10 +211,6 @@ final class MovieRankingViewController: UIViewController {
     
     @objc private func handleRefreshControl() {
         configureRootView()
-    }
-    
-    private func fetchData() {
-        viewModel.fetchData()
     }
 }
 
