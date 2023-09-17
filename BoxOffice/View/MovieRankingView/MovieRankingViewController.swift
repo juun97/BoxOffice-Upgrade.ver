@@ -150,10 +150,10 @@ final class MovieRankingViewController: UIViewController {
             }
             .disposed(by: disposeBag)
         
-        output.actionSheet
+        output.alertBuilder
             .withUnretained(self)
-            .subscribe { owner, actionSheet in
-                actionSheet
+            .subscribe { owner, alertBuilder in
+                alertBuilder
                     .preferredStyle(.actionSheet)
                     .withTitle("화면모드 변경")
                     .addAction(owner.viewModel.cellMode.alertText,style: .default, handler: ({ _ in
