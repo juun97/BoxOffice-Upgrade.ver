@@ -15,21 +15,21 @@ final class MovieRankingViewModel: NSObject, ViewModelType {
     
     struct MovieRankingViewInput {
         let willAppearView: Observable<Bool>
+        let didModelSelected: Observable<DailyBoxOffice>
+        let didTapSelectDateButton: Observable<Void>
+        let didTapSelectModeButton: Observable<Void>
     }
     
     struct MovieRankingViewOutput {
-        let boxOffice: Observable<[MainDataSection]>
+        let boxOffice: Observable<[MovieRankingViewDataSection]>
+        let currentDate: Observable<Date>
+        let detailMovieViewController: Observable<DetailMovieViewController>
+        let calendarViewController: Observable<CalendarViewController>
+        let actionSheet: Observable<AlertBuilder>
     }
-    
-    private let disposeBag: DisposeBag = .init()
+
     private let useCase: MovieRankingUseCaseType
-    
-    var currentDate: BehaviorRelay<Date> = .init(value: .yesterday)
-    private let _boxOffice: BehaviorRelay<[MainDataSection]> = .init(value: [])
-    var boxOffice: Observable<[MainDataSection]> {
-        return _boxOffice.asObservable()
-    }
-    
+    private var currentDate: BehaviorRelay<Date> = .init(value: .yesterday)
     var cellMode: CellMode {
         return useCase.readCellMode()
     }
@@ -45,20 +45,38 @@ final class MovieRankingViewModel: NSObject, ViewModelType {
                 owner.useCase.fetchBoxOfficeData(date: owner.currentDate.value)
             }
             .map { boxOfficeList in
-                [MainDataSection(header: "main", items: boxOfficeList)]
+                [MovieRankingViewDataSection(header: "main", items: boxOfficeList)]
             }
         
-        return Output(boxOffice: boxOffice)
-    }
-    
-    func fetchData() {
-        useCase.fetchBoxOfficeData(date: currentDate.value)
-            .subscribe(onNext: { boxOfficeList in
-                self.updateBoxOffice(newValue: boxOfficeList)
-            }, onError: { error in
-                print(error.localizedDescription)
-            })
-            .disposed(by: disposeBag)
+        let currentDate = input.willAppearView
+            .withUnretained(self)
+            .map { owner, _ in
+                owner.currentDate.value
+            }
+        
+        let detailMovieViewController = input.didModelSelected
+            .withUnretained(self)
+            .map { owner, model in
+                DetailMovieViewController(movieCode: model.movieCode)
+            }
+        
+        let calendarViewController = input.didTapSelectDateButton
+            .withUnretained(self)
+            .map { owner, _ in
+                CalendarViewController(owner.currentDate.value)
+            }
+        
+        let actionSheet = input.didTapSelectModeButton
+            .withUnretained(self)
+            .map { owner, _ in
+                AlertBuilder()
+            }
+ 
+        return Output(boxOffice: boxOffice,
+                      currentDate: currentDate,
+                      detailMovieViewController: detailMovieViewController,
+                      calendarViewController: calendarViewController,
+                      actionSheet: actionSheet)
     }
     
     func changeCellMode() {
@@ -72,11 +90,6 @@ final class MovieRankingViewModel: NSObject, ViewModelType {
     
     func updateDate(_ date: Date) {
         currentDate.accept(date)
-    }
-    
-    private func updateBoxOffice(newValue: [DailyBoxOffice]) {
-        let dataSection =  MainDataSection(header: "main", items: newValue)
-        _boxOffice.accept([dataSection])
     }
 }
 
