@@ -9,7 +9,7 @@ import Foundation
 import RxSwift
 import RxCocoa
 
-final class MovieRankingViewModel: NSObject, ViewModelType {
+final class MovieRankingViewModel: ViewModelType {
     typealias Input = MovieRankingViewInput
     typealias Output = MovieRankingViewOutput
     
@@ -25,7 +25,7 @@ final class MovieRankingViewModel: NSObject, ViewModelType {
         let currentDate: Observable<Date>
         let detailMovieViewController: Observable<DetailMovieViewController>
         let calendarViewController: Observable<CalendarViewController>
-        let actionSheet: Observable<AlertBuilder>
+        let alertBuilder: Observable<AlertBuilder>
     }
 
     private let useCase: MovieRankingUseCaseType
@@ -66,7 +66,7 @@ final class MovieRankingViewModel: NSObject, ViewModelType {
                 CalendarViewController(owner.currentDate.value)
             }
         
-        let actionSheet = input.didTapSelectModeButton
+        let alertBuilder = input.didTapSelectModeButton
             .withUnretained(self)
             .map { owner, _ in
                 AlertBuilder()
@@ -76,7 +76,7 @@ final class MovieRankingViewModel: NSObject, ViewModelType {
                       currentDate: currentDate,
                       detailMovieViewController: detailMovieViewController,
                       calendarViewController: calendarViewController,
-                      actionSheet: actionSheet)
+                      alertBuilder: alertBuilder)
     }
     
     func changeCellMode() {
@@ -90,11 +90,5 @@ final class MovieRankingViewModel: NSObject, ViewModelType {
     
     func updateDate(_ date: Date) {
         currentDate.accept(date)
-    }
-}
-
-extension MovieRankingViewModel: CalendarViewControllerDelegate {
-    func deliverData(_ data: Date) {
-        updateDate(data)
     }
 }
