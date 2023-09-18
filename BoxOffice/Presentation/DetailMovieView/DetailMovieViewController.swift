@@ -10,11 +10,6 @@ import RxSwift
 
 final class DetailMovieViewController: UIViewController {
     // MARK: - Property
-    private let server = NetworkManager.shared
-    private let urlMaker = URLRequestMaker()
-
-    private var moviePoster: MoviePoster?
-    
     private let disposeBag = DisposeBag()
     private let viewModel: DetailMovieViewModel
     
@@ -75,6 +70,8 @@ final class DetailMovieViewController: UIViewController {
         super.viewDidLoad()
  
         configureViewController()
+        configureUI()
+        configureLayout()
         bind()
     }
     
@@ -104,15 +101,8 @@ final class DetailMovieViewController: UIViewController {
 
     private func configureViewController() {
         view.backgroundColor = .white
-        loadingIndicatorView.startAnimating()
-        configureMainView()
     }
-    
-    private func configureMainView() {
-        configureUI()
-        configureLayout()
-    }
-    
+
     private func configureUI() {
         view.addSubview(scrollView)
         view.addSubview(loadingIndicatorView)
