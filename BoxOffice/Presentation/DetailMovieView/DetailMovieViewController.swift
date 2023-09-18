@@ -75,6 +75,7 @@ final class DetailMovieViewController: UIViewController {
         super.viewDidLoad()
  
         configureViewController()
+        bind()
     }
     
     private func bind() {
@@ -83,11 +84,21 @@ final class DetailMovieViewController: UIViewController {
         let output = viewModel.transform(input)
         
         output.movieInformation
+            .observe(on: MainScheduler.instance)
             .withUnretained(self)
             .subscribe { owner, movie in
                 let movieInfo = movie.movieInformationResult.movieInformation
                 owner.configureContentStackView(movieInformation: movieInfo)
             }
+            .disposed(by: disposeBag)
+        
+        output.movieImageData
+            .observe(on: MainScheduler.instance)
+            .withUnretained(self)
+            .map { owner, data in
+                UIImage(data: data)
+            }
+            .bind(to: imageView.rx.image)
             .disposed(by: disposeBag)
     }
 
