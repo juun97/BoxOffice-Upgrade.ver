@@ -100,33 +100,11 @@ final class DetailMovieViewController: UIViewController {
     }
     
     private func fetchMovieInformationData(movieCode: String, completion: @escaping () -> Void) {
-        guard let request = urlMaker.makeMovieInformationURLRequest(movieCode: movieCode) else { return }
-        
-        server.startLoad(request: request, mime: "json") { [weak self] result in
-            let decoder = DecodeManager()
-            
-            guard let verifiedFetchingResult = try? self?.verifyResult(result: result) else { return }
-            let decodedFile = decoder.decodeJSON(data: verifiedFetchingResult, type: DetailMovieInformation.self)
-            let verifiedDecodingResult = try? self?.verifyResult(result: decodedFile)
-            
-            self?.movieInformation = verifiedDecodingResult?.movieInformationResult.movieInformation
-            completion()
-        }
+  
     }
     
     private func fetchMoviePosterData(movieName: String, completion: @escaping () -> Void) {
-        guard let posterRequest = urlMaker.makeMoviePosterURLRequest(movieName: movieName) else { return }
-        
-        server.startLoad(request: posterRequest, mime: "json") { [weak self] result in
-            let decoder = DecodeManager()
-            
-            guard let verifiedFetchingResult = try? self?.verifyResult(result: result) else { return }
-            let decodedFile = decoder.decodeJSON(data: verifiedFetchingResult, type: MoviePoster.self)
-            let verifiedDecodingResult = try? self?.verifyResult(result: decodedFile)
-            
-            self?.moviePoster = verifiedDecodingResult
-            completion()
-        }
+
     }
     
     private func fetchImageData(imageURL: String, completion: @escaping (UIImage?) -> Void) {

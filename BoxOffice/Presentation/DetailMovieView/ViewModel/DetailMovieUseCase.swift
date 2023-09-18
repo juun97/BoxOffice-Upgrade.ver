@@ -5,7 +5,6 @@
 //  Created by 김성준 on 2023/08/16.
 //
 
-import Foundation
 import RxSwift
 
 enum DetailMovieUseCaseError: Error {
@@ -37,6 +36,5 @@ final class DetailMovieUseCase: DetailMovieUseCaseType {
         
         return NetworkManager.shared.fetchData(request: request)
             .decode(type: MoviePoster.self, decoder: JSONDecoder())
-        
     }
 }

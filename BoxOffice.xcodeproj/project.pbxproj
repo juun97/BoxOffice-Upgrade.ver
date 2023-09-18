@@ -407,7 +407,7 @@
 				08E1C12E29C82D0D000FAF49 /* App */,
 				08DD8EA529C9667600DA67E2 /* Network */,
 				08E1C12D29C82D01000FAF49 /* Model */,
-				D06CB3B129C8766700136FD3 /* View */,
+				D06CB3B129C8766700136FD3 /* Presentation */,
 				D06CB3AE29C8761300136FD3 /* Controller */,
 				082B0FED2AA9AD2D0024DD0A /* Util */,
 				D06CB3B029C8764D00136FD3 /* Resources */,
@@ -432,7 +432,7 @@
 			path = Resources;
 			sourceTree = "<group>";
 		};
-		D06CB3B129C8766700136FD3 /* View */ = {
+		D06CB3B129C8766700136FD3 /* Presentation */ = {
 			isa = PBXGroup;
 			children = (
 				08DF9CEF2AB0606C00484354 /* Common */,
@@ -441,7 +441,7 @@
 				080213DB2A8C9E510023B7B0 /* CalendarView */,
 				080213DC2A8C9E770023B7B0 /* UIComponents */,
 			);
-			path = View;
+			path = Presentation;
 			sourceTree = "<group>";
 		};
 		D06CB3B729C8770C00136FD3 /* BoxOfficeTests */ = {
