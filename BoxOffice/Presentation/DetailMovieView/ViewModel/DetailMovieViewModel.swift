@@ -14,12 +14,12 @@ final class DetailMovieViewModel: ViewModelType {
     typealias Output = DetailMovieOutput
     
     struct DetailMovieInput {
-        let viewWillAppear: Observable<Void>
+        let viewWillAppear: Observable<Bool>
     }
     
     struct DetailMovieOutput {
         let movieInformation: Observable<DetailMovieInformation>
-        let movieImageURL: Observable<MoviePoster>
+        let movieImageData: Observable<Data>
     }
     
     private let movieCode: String
@@ -38,14 +38,19 @@ final class DetailMovieViewModel: ViewModelType {
                 owner.useCase.fetchMovieInformation(movieCode: owner.movieCode)
             }
 
-        let moviePoster = movieInformation
+        let movieImageData = movieInformation
             .withUnretained(self)
             .flatMap { owner, movie in
                 owner.useCase.fetchMoviePoster(movieName: movie.movieInformationResult.movieInformation.movieName)
             }
+            .withUnretained(self)
+            .flatMap { owner, moviePoster in
+                let url = moviePoster.documents[index: 0]?.imageURL
+                return owner.useCase.fetchMoviePosterImageData(urlString: url)
+            }
             
         
-        return Output(movieInformation: movieInformation, movieImageURL: moviePoster)
+        return Output(movieInformation: movieInformation, movieImageData: movieImageData)
         
     }
 }
