@@ -6,21 +6,17 @@
 //
 
 import UIKit
+import RxSwift
 
 final class DetailMovieViewController: UIViewController {
     // MARK: - Property
     private let server = NetworkManager.shared
     private let urlMaker = URLRequestMaker()
-    private var movieCode: String
-    private var movieInformation: MovieInformation? {
-        didSet {
-            DispatchQueue.main.async { [weak self] in
-                self?.title = self?.movieInformation?.movieName
-                self?.configureContentStackView()
-            }
-        }
-    }
+
     private var moviePoster: MoviePoster?
+    
+    private let disposeBag = DisposeBag()
+    private let viewModel: DetailMovieViewModel
     
     //MARK: - UIProperty
     private let loadingIndicatorView: UIActivityIndicatorView = {
@@ -66,8 +62,8 @@ final class DetailMovieViewController: UIViewController {
     private let actorsStackView = CustomStackView(title: "배우")
     
     // MARK: - Method
-    init(movieCode: String) {
-        self.movieCode = movieCode
+    init(viewModel: DetailMovieViewModel) {
+        self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -81,56 +77,23 @@ final class DetailMovieViewController: UIViewController {
         configureViewController()
     }
     
-    private func fetchData() {
-        fetchMovieInformationData(movieCode: movieCode) { [weak self] in
-            guard let movieName = self?.movieInformation?.movieName else { return }
-
-            self?.fetchMoviePosterData(movieName: movieName) {
-                guard let urlString = self?.moviePoster?.documents[0].imageURL else { return }
-                
-                self?.fetchImageData(imageURL: urlString) { image in
-                    DispatchQueue.main.async {
-                        self?.loadingIndicatorView.stopAnimating()
-                        self?.imageView.image = image
-                        self?.configureContentStackView()
-                    }
-                }
-            }
-        }
-    }
-    
-    private func fetchMovieInformationData(movieCode: String, completion: @escaping () -> Void) {
-  
-    }
-    
-    private func fetchMoviePosterData(movieName: String, completion: @escaping () -> Void) {
-
-    }
-    
-    private func fetchImageData(imageURL: String, completion: @escaping (UIImage?) -> Void) {
-        guard let url = URL(string: imageURL) else { return }
-        let request = URLRequest(url: url)
+    private func bind() {
+        let viewWillAppear = self.rx.viewWillAppear.asObservable()
+        let input = DetailMovieViewModel.Input(viewWillAppear: viewWillAppear)
+        let output = viewModel.transform(input)
         
-        server.startLoad(request: request, mime: "image") { [weak self] result in
-            guard let verifiedFetchingResult = try? self?.verifyResult(result: result) else { return }
-            let image = UIImage(data: verifiedFetchingResult)
-            completion(image)
-        }
+        output.movieInformation
+            .withUnretained(self)
+            .subscribe { owner, movie in
+                let movieInfo = movie.movieInformationResult.movieInformation
+                owner.configureContentStackView(movieInformation: movieInfo)
+            }
+            .disposed(by: disposeBag)
     }
-    
-    private func verifyResult<T, E: Error>(result: Result<T, E>) throws -> T? {
-        switch result {
-        case .success(let data):
-            return data
-        case .failure(let error):
-            throw error
-        }
-    }
-    
+
     private func configureViewController() {
         view.backgroundColor = .white
         loadingIndicatorView.startAnimating()
-        fetchData()
         configureMainView()
     }
     
@@ -172,15 +135,15 @@ final class DetailMovieViewController: UIViewController {
         ])
     }
     
-    private func configureContentStackView() {
-        let director = movieInformation?.directors.map(\.peopleName).joined(separator: ", ").formatEmptyString()
-        let watchGrade = movieInformation?.audits.map(\.watchGradeName).joined(separator: ", ").formatEmptyString()
-        let nation = movieInformation?.nations.map(\.nationName).joined(separator: ", ").formatEmptyString()
-        let genre = movieInformation?.genres.map(\.genreName).joined(separator: ", ").formatEmptyString()
-        let actor = movieInformation?.actors.map(\.peopleName).joined(separator: ", ").formatEmptyString()
-        let productYear = movieInformation?.productYear
-        let openDate = movieInformation?.openDate.formatDateString(format: DateFormat.yearMonthDay)
-        let showTime = movieInformation?.showTime
+    private func configureContentStackView(movieInformation: MovieInformation) {
+        let director = movieInformation.directors.map(\.peopleName).joined(separator: ", ").formatEmptyString()
+        let watchGrade = movieInformation.audits.map(\.watchGradeName).joined(separator: ", ").formatEmptyString()
+        let nation = movieInformation.nations.map(\.nationName).joined(separator: ", ").formatEmptyString()
+        let genre = movieInformation.genres.map(\.genreName).joined(separator: ", ").formatEmptyString()
+        let actor = movieInformation.actors.map(\.peopleName).joined(separator: ", ").formatEmptyString()
+        let productYear = movieInformation.productYear
+        let openDate = movieInformation.openDate.formatDateString(format: DateFormat.yearMonthDay)
+        let showTime = movieInformation.showTime
         
         directorStackView.configureContext(context: director)
         productYearStackView.configureContext(context: productYear)
