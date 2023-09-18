@@ -16,6 +16,7 @@ enum DetailMovieUseCaseError: Error {
 protocol DetailMovieUseCaseType {
     func fetchMovieInformation(movieCode: String) -> Observable<DetailMovieInformation>
     func fetchMoviePoster(movieName: String) -> Observable<MoviePoster>
+    func fetchMoviePosterImageData(urlString: String?) -> Observable<Data>
 }
 
 final class DetailMovieUseCase: DetailMovieUseCaseType {
@@ -36,5 +37,14 @@ final class DetailMovieUseCase: DetailMovieUseCaseType {
         
         return NetworkManager.shared.fetchData(request: request)
             .decode(type: MoviePoster.self, decoder: JSONDecoder())
+    }
+    
+    func fetchMoviePosterImageData(urlString: String?) -> Observable<Data> {
+        guard let urlString = urlString,
+              let url = URL(string: urlString) else {
+            return .error(DetailMovieUseCaseError.invalidRequest)
+        }
+        
+        return NetworkManager.shared.fetchData(request: URLRequest(url: url))
     }
 }
