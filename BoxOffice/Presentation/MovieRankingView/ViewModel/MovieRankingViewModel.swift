@@ -57,7 +57,7 @@ final class MovieRankingViewModel: ViewModelType {
         let detailMovieViewController = input.didModelSelected
             .withUnretained(self)
             .map { owner, model in
-                DetailMovieViewController(movieCode: model.movieCode)
+                DetailMovieViewController(viewModel: .init(movieCode: model.movieCode))
             }
         
         let calendarViewController = input.didTapSelectDateButton
