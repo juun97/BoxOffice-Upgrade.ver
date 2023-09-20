@@ -43,7 +43,7 @@ final class CalendarViewController: UIViewController {
     }
     
     override func viewDidDisappear(_ animated: Bool) {
-        delegate?.deliverData(date)
+        NotificationCenter.default.post(name: .calendarViewDismiss, object: nil, userInfo: ["currentDate": date])
     }
     
     private func configureMainView() {
