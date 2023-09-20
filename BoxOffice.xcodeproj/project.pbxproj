@@ -16,6 +16,7 @@
 		0891E3C329D3424A00FE3AF8 /* CALayer+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0891E3C229D3424A00FE3AF8 /* CALayer+.swift */; };
 		08A6747529D1CA53008F3064 /* String+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08A6747429D1CA53008F3064 /* String+.swift */; };
 		08C61F9F29CC1CA20006A1FE /* NetworkManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08C61F9E29CC1CA20006A1FE /* NetworkManagerTests.swift */; };
+		08CE0FE72AB98F53007D043A /* Notification.Name+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08CE0FE62AB98F53007D043A /* Notification.Name+.swift */; };
 		08CE13BE29CAF80100C15A16 /* ShowType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08CE13B329CAF80100C15A16 /* ShowType.swift */; };
 		08CE13BF29CAF80100C15A16 /* ShowType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08CE13B329CAF80100C15A16 /* ShowType.swift */; };
 		08CE13C029CAF80100C15A16 /* Nation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08CE13B429CAF80100C15A16 /* Nation.swift */; };
@@ -105,6 +106,7 @@
 		08A6747429D1CA53008F3064 /* String+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+.swift"; sourceTree = "<group>"; };
 		08C61F9C29CC1CA20006A1FE /* NetworkManagerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NetworkManagerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		08C61F9E29CC1CA20006A1FE /* NetworkManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManagerTests.swift; sourceTree = "<group>"; };
+		08CE0FE62AB98F53007D043A /* Notification.Name+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Notification.Name+.swift"; sourceTree = "<group>"; };
 		08CE13B329CAF80100C15A16 /* ShowType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ShowType.swift; sourceTree = "<group>"; };
 		08CE13B429CAF80100C15A16 /* Nation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Nation.swift; sourceTree = "<group>"; };
 		08CE13B529CAF80100C15A16 /* Genre.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Genre.swift; sourceTree = "<group>"; };
@@ -312,6 +314,7 @@
 				D0E9D0CD29DF0CB100063F90 /* Array+.swift */,
 				08EB9F7529E818C400EF38AD /* URLSession+.swift */,
 				08D9A4F22A95E97E00A37C00 /* Result+.swift */,
+				08CE0FE62AB98F53007D043A /* Notification.Name+.swift */,
 			);
 			path = Extension;
 			sourceTree = "<group>";
@@ -659,6 +662,7 @@
 				08E7F5C729D733FF00C7F3BD /* Meta.swift in Sources */,
 				08DD8EA429C9665B00DA67E2 /* NetworkManager.swift in Sources */,
 				082B0FEF2AA9AD770024DD0A /* AlertBuilder.swift in Sources */,
+				08CE0FE72AB98F53007D043A /* Notification.Name+.swift in Sources */,
 				080213E12A8CA2870023B7B0 /* MovieRankingViewModel.swift in Sources */,
 				08E1C12C29C82CF9000FAF49 /* DailyBoxOffice.swift in Sources */,
 				08CE13CE29CAF80100C15A16 /* Audit.swift in Sources */,
