@@ -8,28 +8,31 @@
 import Foundation
 import RxSwift
 import RxCocoa
+import RxDataSources
 
 final class MovieRankingViewModel: ViewModelType {
     typealias Input = MovieRankingViewInput
     typealias Output = MovieRankingViewOutput
     
     struct MovieRankingViewInput {
-        let willAppearView: Observable<Bool>
+        let viewWillAppear: Observable<Bool>
         let didModelSelected: Observable<DailyBoxOffice>
         let didTapSelectDateButton: Observable<Void>
         let didTapSelectModeButton: Observable<Void>
+        let didCalendarViewDismiss: Observable<Notification>
     }
     
     struct MovieRankingViewOutput {
         let boxOffice: Observable<[MovieRankingViewDataSection]>
         let currentDate: Observable<Date>
         let detailMovieViewController: Observable<DetailMovieViewController>
-        let calendarViewController: Observable<CalendarViewController>
+        let calendarViewController: Observable<Date>
         let alertBuilder: Observable<AlertBuilder>
     }
-
+    
     private let useCase: MovieRankingUseCaseType
-    private var currentDate: BehaviorRelay<Date> = .init(value: .yesterday)
+    private var currentDate: Date = .yesterday
+    
     var cellMode: CellMode {
         return useCase.readCellMode()
     }
@@ -39,19 +42,34 @@ final class MovieRankingViewModel: ViewModelType {
     }
     
     func transform(_ input: MovieRankingViewInput) -> MovieRankingViewOutput {
-        let boxOffice = input.willAppearView
+        let initialDate = input.viewWillAppear
+            .map { _ in
+                self.currentDate
+            }
+        
+        let updatedDate = input.didCalendarViewDismiss
+            .compactMap { notification in
+                notification.userInfo?["currentDate"] as? Date
+            }
             .withUnretained(self)
-            .flatMap { owner, _ in
-                owner.useCase.fetchBoxOfficeData(date: owner.currentDate.value)
+            .map { owner, date in
+                owner.currentDate = date
+            }
+            .withUnretained(self)
+            .map { owner, _ in
+                owner.currentDate
+            }
+   
+        
+        let currentDate = Observable.of(initialDate, updatedDate).merge()
+        
+        let boxOffice = currentDate
+            .withUnretained(self)
+            .flatMap { owner, date in
+                owner.useCase.fetchBoxOfficeData(date: date)
             }
             .map { boxOfficeList in
                 [MovieRankingViewDataSection(header: "main", items: boxOfficeList)]
-            }
-        
-        let currentDate = input.willAppearView
-            .withUnretained(self)
-            .map { owner, _ in
-                owner.currentDate.value
             }
         
         let detailMovieViewController = input.didModelSelected
@@ -62,16 +80,23 @@ final class MovieRankingViewModel: ViewModelType {
         
         let calendarViewController = input.didTapSelectDateButton
             .withUnretained(self)
-            .map { owner, _ in
-                CalendarViewController(owner.currentDate.value)
+            .map { owner, date in
+                owner.currentDate
             }
-        
+//            .map { owner, _ in
+//                print("ggg")
+//            }
+//            .flatMap { owner, _ in
+//                currentDate
+//            }
+//            .map { date in
+//                CalendarViewController(date)
+//            }
+            
         let alertBuilder = input.didTapSelectModeButton
-            .withUnretained(self)
-            .map { owner, _ in
-                AlertBuilder()
-            }
- 
+            .map(AlertBuilder.init)
+        
+        
         return Output(boxOffice: boxOffice,
                       currentDate: currentDate,
                       detailMovieViewController: detailMovieViewController,
@@ -86,9 +111,5 @@ final class MovieRankingViewModel: ViewModelType {
         case .icon:
             useCase.saveCellMode(.list)
         }
-    }
-    
-    func updateDate(_ date: Date) {
-        currentDate.accept(date)
     }
 }
