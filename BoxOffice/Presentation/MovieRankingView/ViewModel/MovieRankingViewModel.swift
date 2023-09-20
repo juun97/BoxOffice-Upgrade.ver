@@ -15,7 +15,6 @@ final class MovieRankingViewModel: ViewModelType {
     typealias Output = MovieRankingViewOutput
     
     struct MovieRankingViewInput {
-        let viewWillAppear: Observable<Bool>
         let didModelSelected: Observable<DailyBoxOffice>
         let didTapSelectDateButton: Observable<Void>
         let didTapSelectModeButton: Observable<Void>
@@ -25,7 +24,7 @@ final class MovieRankingViewModel: ViewModelType {
     struct MovieRankingViewOutput {
         let boxOffice: Observable<[MovieRankingViewDataSection]>
         let currentDate: Observable<Date>
-        let detailMovieViewController: Observable<DetailMovieViewController>
+        let movieCodeForDetailView: Observable<String>
         let calendarViewController: Observable<Date>
         let alertBuilder: Observable<AlertBuilder>
     }
@@ -42,10 +41,7 @@ final class MovieRankingViewModel: ViewModelType {
     }
     
     func transform(_ input: MovieRankingViewInput) -> MovieRankingViewOutput {
-        let initialDate = input.viewWillAppear
-            .map { _ in
-                self.currentDate
-            }
+        let defaultDate = Observable.just(currentDate)
         
         let updatedDate = input.didCalendarViewDismiss
             .compactMap { notification in
@@ -60,8 +56,7 @@ final class MovieRankingViewModel: ViewModelType {
                 owner.currentDate
             }
    
-        
-        let currentDate = Observable.of(initialDate, updatedDate).merge()
+        let currentDate = Observable.of(defaultDate, updatedDate).merge()
         
         let boxOffice = currentDate
             .withUnretained(self)
@@ -73,25 +68,13 @@ final class MovieRankingViewModel: ViewModelType {
             }
         
         let detailMovieViewController = input.didModelSelected
-            .withUnretained(self)
-            .map { owner, model in
-                DetailMovieViewController(viewModel: .init(movieCode: model.movieCode))
-            }
+            .map { $0.movieCode }
         
         let calendarViewController = input.didTapSelectDateButton
             .withUnretained(self)
             .map { owner, date in
                 owner.currentDate
             }
-//            .map { owner, _ in
-//                print("ggg")
-//            }
-//            .flatMap { owner, _ in
-//                currentDate
-//            }
-//            .map { date in
-//                CalendarViewController(date)
-//            }
             
         let alertBuilder = input.didTapSelectModeButton
             .map(AlertBuilder.init)
@@ -99,7 +82,7 @@ final class MovieRankingViewModel: ViewModelType {
         
         return Output(boxOffice: boxOffice,
                       currentDate: currentDate,
-                      detailMovieViewController: detailMovieViewController,
+                      movieCodeForDetailView: detailMovieViewController,
                       calendarViewController: calendarViewController,
                       alertBuilder: alertBuilder)
     }
