@@ -113,17 +113,20 @@ final class MovieRankingViewController: UIViewController {
     }
     
     func bind() {
-        let willAppearView = self.rx.viewWillAppear.asObservable()
+        let viewWillAppear = self.rx.viewWillAppear.asObservable()
         let didModelSelected = collectionView.rx.modelSelected(DailyBoxOffice.self).asObservable()
         let didTapSelectDateButton = selectDateButton.rx.tap.asObservable()
         let didTapSelectModeButton = selectModeButton.rx.tap.asObservable()
-        
-        let input = MovieRankingViewModel.Input(willAppearView: willAppearView,
+        let didCalendarViewDismiss = NotificationCenter.default.rx.notification(.calendarViewDismiss)
+  
+        let input = MovieRankingViewModel.Input(viewWillAppear: viewWillAppear,
                                                 didModelSelected: didModelSelected,
                                                 didTapSelectDateButton: didTapSelectDateButton,
-                                                didTapSelectModeButton: didTapSelectModeButton)
+                                                didTapSelectModeButton: didTapSelectModeButton,
+                                                didCalendarViewDismiss: didCalendarViewDismiss)
         let output = viewModel.transform(input)
         
+      
         output.boxOffice
             .observe(on: MainScheduler.instance)
             .bind(to: collectionView.rx.items(dataSource: dataSource))
@@ -144,9 +147,9 @@ final class MovieRankingViewController: UIViewController {
         
         output.calendarViewController
             .withUnretained(self)
-            .subscribe { owner, calendarViewController in
-                calendarViewController.delegate = owner
-                owner.present(calendarViewController, animated: true)
+            .subscribe { owner, date in
+                let vc = CalendarViewController(date)
+                owner.present(vc, animated: true)
             }
             .disposed(by: disposeBag)
         
@@ -264,12 +267,3 @@ extension MovieRankingViewController: UICollectionViewDelegateFlowLayout {
         return 10.0
     }
 }
-
-extension MovieRankingViewController: CalendarViewControllerDelegate {
-    func deliverData(_ date: Date) {
-        viewModel.updateDate(date)
-        collectionView.reloadData()
-    }
-}
-
-
