@@ -113,14 +113,12 @@ final class MovieRankingViewController: UIViewController {
     }
     
     func bind() {
-        let viewWillAppear = self.rx.viewWillAppear.asObservable()
         let didModelSelected = collectionView.rx.modelSelected(DailyBoxOffice.self).asObservable()
         let didTapSelectDateButton = selectDateButton.rx.tap.asObservable()
         let didTapSelectModeButton = selectModeButton.rx.tap.asObservable()
         let didCalendarViewDismiss = NotificationCenter.default.rx.notification(.calendarViewDismiss)
   
-        let input = MovieRankingViewModel.Input(viewWillAppear: viewWillAppear,
-                                                didModelSelected: didModelSelected,
+        let input = MovieRankingViewModel.Input(didModelSelected: didModelSelected,
                                                 didTapSelectDateButton: didTapSelectDateButton,
                                                 didTapSelectModeButton: didTapSelectModeButton,
                                                 didCalendarViewDismiss: didCalendarViewDismiss)
@@ -138,10 +136,11 @@ final class MovieRankingViewController: UIViewController {
             .bind(to: rx.title)
             .disposed(by: disposeBag)
         
-        output.detailMovieViewController
+        output.movieCodeForDetailView
             .withUnretained(self)
-            .subscribe { owner, detailMovieViewController in
-                owner.navigationController?.pushViewController(detailMovieViewController, animated: true)
+            .subscribe { owner, movieCode in
+                let vc = DetailMovieViewController(viewModel: .init(movieCode: movieCode))
+                owner.navigationController?.pushViewController(vc, animated: true)
             }
             .disposed(by: disposeBag)
         
