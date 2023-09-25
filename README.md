@@ -1,126 +1,131 @@
-# 박스 오피스 🎥
+# 박스 오피스 리팩토링 ver 🎥
 
 ## 프로젝트 소개
 > 서버와 통신하여 영화정보를 화면에 출력하는 앱
 > 
-> 프로젝트 기간: 2023.03.20 - 2023.04.14
-
-## 목차 :book:
+> 프로젝트 기간: 2023.08.25 - 2023.09.23
 
 
-- [1. 팀원을 소개합니다 👀](#팀원을-소개합니다-) 
-- [2. 시각화된 프로젝트 구조](#시각화된-프로젝트-구조)
-    - [2-1. Class Diagram 🗺](#class-diagram-) 
-    - [2-2. File Tree 🌲](#file-tree-) 
-- [3. 타임라인 ⏰](#타임라인-) 
-- [4. 실행 화면 🎬](#실행-화면-) 
-- [5. 트러블슈팅 🚀](#트러블-슈팅-) 
-- [6. Reference 📑](#reference-) 
+## ⚙️ 개발환경 및 라이브러리
+[![iOS](https://img.shields.io/badge/iOS-16.0-yellow)]() [![swift](https://img.shields.io/badge/swift-5.0-orange)]() [![xcode](https://img.shields.io/badge/Xcode-14.3.1-blue)]() [![rxswift](https://img.shields.io/badge/RxSwift-6.5.0-green)]() [![rxDataSource](https://img.shields.io/badge/RxDataSource-5.0-red)]()
+
+## 핵심 기술스택 💎
+
+`MVVM`, `RxSwift`, `RxDataSource`, `UserDefaults`, `CollectionView`, `UICalendarView`
+
+## 설계 📍
+
+### Layer 🗺
+
+<Img src = "https://github.com/juun97/ios-diary/assets/59365211/aafca41c-11e6-4ec1-bce0-e6c7aa0bcb4a" width="700">
+
+#### Presentaion Layer
+- 사용자 인터페이스(UI)를 담당합니다. 이 레이어는 화면의 구성 요소를 표시하고 사용자 입력을 처리합니다.
+- View: 사용자 인터페이스를 그리고, 사용자와의 상호작용을 처리합니다. View는 주로 화면 표시와 사용자 입력 처리에 집중합니다.
+- ViewModel: UI와 상호작용하고 데이터를 관리합니다. ViewModel은 Presentation Logic을 제어하고, 비즈니스 로직이나 도메인 로직을 호출하며, 데이터를 노출합니다.
+
+#### Domain Layer
+- 비즈니스 로직 또는 도메인 로직을 처리합니다. 비즈니스 규칙과 데이터 처리 로직을 담당합니다.
+- ViewModel과 상호작용하여 데이터를 처리하고 변환합니다.
+- Use Case (Interactor): 비즈니스 로직을 캡슐화하고, 데이터의 흐름을 조작합니다. Use Case는 ViewModel에 필요한 데이터를 제공하고, 데이터를 도메인 객체로 변환합니다.
+
+
+#### Data Layer
+- 데이터에 접근하고 관리하는 역할을 합니다.
+
+
+### Architectural Pattern
+
+`MVC` 아키텍처는 간단하고 직관적인 설계 패턴으로, Controller가 View와 Model을 연결하여 사용하기 쉽습니다. 그러나 이러한 연결은 Controller가 View와 Model 양쪽에 의존해야 함을 의미하며, 이로 인해 결합도가 높아집니다.
+
+MVC 아키텍처는 규모가 작은 어플리케이션을 개발할 때 간편하게 사용할 수 있지만, 어플리케이션 규모가 커질수록 유지 보수 측면에서 취약점이 발생할 수 있습니다. 이로 인해 코드 변경이 필요한 경우 해당 변경 사항이 전체 코드에 미치는 파급 효과가 증가하며, 코드의 복잡성과 결합도가 증가할 수 있습니다. 이는 비용과 리스크의 증가로 이어질 수 있습니다.
+
+
+<Img src = "https://blogs.sap.com/wp-content/uploads/2017/04/pic1.png" width="500">
+
+</br>
+</br>
+
+`MVVM` 아키텍처는 이러한 `MVC` 의 한계를 극복하기 위해 개발되었습니다. `MVVM` 은 View와 Model 사이에 ViewModel을 도입함으로써 Controller의 역할을 분리하고, 데이터와 UI 간의 바인딩을 더 효과적으로 다룰 수 있게 합니다.
+
+<Img src = "https://blogs.sap.com/wp-content/uploads/2017/04/pic3.png" width="500">
+
+</br>
+</br>
+
+MVVM의 핵심 아이디어는 `데이터와 뷰 간의 결합도`를 낮추는 데 있습니다. 결합도가 낮아진다면 다음과 같은 이점은 챙길 수 있습니다.
+
+- 유지 보수성 향상: MVVM은 데이터와 비즈니스 로직을 뷰에서 분리함으로써 뷰의 변경이나 업데이트에 더 유연하게 대응할 수 있습니다. 이로 인해 애플리케이션의 유지 보수가 용이해지며 새로운 기능을 추가하거나 변경할 때 예기치 않은 부작용을 줄일 수 있습니다.
+
+- 확장성: MVVM은 뷰모델을 통해 뷰와 모델 간의 중간 계층을 제공합니다. 이로써 새로운 뷰를 쉽게 추가하거나 기존 뷰를 변경할 수 있습니다. 뷰모델은 다양한 뷰와 함께 재사용할 수 있으며, 다른 플랫폼 또는 디바이스에서 동일한 뷰모델을 활용할 수 있습니다.
+
+- 테스트 용이성: MVVM은 뷰와 모델을 분리하고 뷰모델을 중심으로 데이터 흐름을 관리하므로 단위 테스트가 쉽게 수행됩니다. 뷰와 뷰모델 간의 인터페이스가 명확하게 정의되어 있으므로 테스트 케이스를 작성하고 각 구성 요소를 독립적으로 테스트하는 데 용이합니다.
+
+- 재사용성: 뷰모델은 뷰와 독립적으로 존재하며 뷰와 결합되지 않습니다. 따라서 동일한 뷰모델을 여러 뷰에서 재사용할 수 있습니다. 이는 코드의 재사용성을 증가시키며 개발 시간을 단축시킵니다.
 
 </br>
 
-## 팀원을 소개합니다 👀
+## File Tree 🌲
 
-|<center>[Rhode](https://github.com/Rhode-park)</center> | <center> [릴라](https://github.com/juun97)</center> | 
-|--- | --- |
-|<Img src = "https://i.imgur.com/XyDwGwe.jpg" width="300">| <img src="https://i.imgur.com/9M6jEo2.png" width=300>  |
+<details>
+<summary>File Tree 펼치기/접기</summary>
+<div markdown="1">
 
-</br>
-
-## 시각화된 프로젝트 구조 
-
-### Class Diagram 🗺
-
-<Img src = "https://i.imgur.com/NNNsFuc.png" width="700">
-
-
-
-</br>
-
-### File Tree 🌲
 
 ```typescript
 BoxOffice
-├── BoxOffice
-│   ├── Resources
-│   │   ├── Assets
-│   │   └── Info
-│   ├── App
-│   │   ├── AppDelegate.swift
-│   │   └── SceneDelegate.swift
-│   ├── Error
-│   │   ├── NetworkError.swift
-│   │   └── DecodeError.swift
-│   ├── Extension
-│   │   ├── Date+.swift
-│   │   ├── Array+.swift
-│   │   ├── String+.swift
-│   │   └── CALayer+.swift
-│   ├── Extra
-│   │   ├── DecodeManager.swift
-│   │   └── DateFormat.swift
-│   ├── Network
-│   │   ├── NetworkManager.swift
-│   │   ├── URLRequestMaker.swift
-│   │   └── ImageLoader.swift
-│   ├── Model
-│   │   ├── MoviePoster
-│   │   │   ├── MoviePoster.swift
-│   │   │   ├── Document.swift
-│   │   │   └── Meta.swift
-│   │   ├── DailyBoxOffice
-│   │   │   ├── BoxOffice.swift
-│   │   │   ├── BoxOfficeResult.swift
-│   │   │   └── DailyBoxOffice.swift
-│   │   └── DetailMovieInformation
-│   │       ├── DetailMovieInformation.swift
-│   │       ├── MovieInformationResult.swift
-│   │       ├── MovieInformation.swift
-│   │       ├── Nation.swift
-│   │       ├── Genre.swift
-│   │       ├── Director.swift
-│   │       ├── Actor.swift
-│   │       ├── ShowType.swift
-│   │       ├── Company.swift
-│   │       ├── Audit.swift
-│   │       └── Staff.swift
-│   ├── View
-│   │   ├── LaunchScreen
-│   │   ├── CustomStackView
-│   │   └── CustomCollectionViewCell.swift
-│   └── Controller
-│       ├── BoxOfficeListViewController.swift
-│       └── DetailMovieViewController.swift
-└── BoxOfficeTests
-    └── BoxOfficeTests
+│
+├── AppDelegate.swift
+│   ├── AppDelegate.swift
+│   └── SceneDelegate.swift
+├── Model
+│   ├── CellMode.swift
+│   └── DTO
+│       ├── DailyBoxOffice
+│       ├── DetailMovieInformation
+│       └── MoviePoster
+│           ├── Document.swift
+│           ├── Meta.swift
+│           └── MoviePoster.swift
+├── Network
+│   ├── NetworkManager.swift
+│   └── URLRequestMaker.swift
+├── Presentation
+│   ├── Common
+│   │   └── ViewModelType.swift
+│   ├── MovieRankingView
+│   │   ├── MovieRankingViewController.swift
+│   │   └── ViewModel
+│   │       ├── MovieRankingUseCase.swift
+│   │       └── MovieRankingViewModel.swift
+│   ├── DetailMovieView
+│   │   ├── DetailMovieViewController.swift
+│   │   └── ViewModel
+│   │       ├── DetailMovieUseCase.swift
+│   │       └── DetailMovieViewModel.swift
+│   ├── CalendarView
+│   │   ├── CalendarViewController.swift
+│   │   └── ViewModel
+│   │       ├── CalendarViewUseCase.swift
+│   │       └── CalendarViewViewModel.swift
+│   └── UIComponents
+│       ├── CustomCollectionViewIconCell.swift
+│       ├── CustomCollectionViewListCell.swift
+│       └── CustomStackView.swift
+└── Util
+    ├── AlertBuilder.swift
+    ├── DateFormat.swift
+    ├── DecodeManager.swift
+    ├── StringConvertible.swift
+    └── Extension
 ```
+</div>
+</details>
 
 
 </br>
 
-## 타임라인 ⏰
 
-| <center>날짜</center> | <center>타임라인</center> |
-| --- | --- |
-| **2023.03.20** | - JSON 디코딩 위한 모델 구현 </br>- Decoder 객체 구현  |
-| **2023.03.21** | - 추가적으로 필요한 모델 구현 </br> - 서버 통신을 위한 NetworkManger 구현 |
-| **2023.03.22** | - 기능 분리 리팩토링 </br> - 기존 로직 최적화 리팩토링 |
-| **2023.03.23** | - 서버 통신에 대한 유닛 테스트 진행 |
-| **2023.03.24** | - 서버 통신에 대한 유닛 테스트 진행  |
-| **2023.03.27** | - CustomCell 구현 </br> - UICollecionView 구현을 위한 extension 내부 구현 |
-| **2023.03.28** | - 잡아당길 시 새로고침되는 기능을 위한 configureRefreshControll, handleRefreshControll 메서드 구현 |
-| **2023.03.29** | - CustomCell을 UICollectionViewListCell로 변경하는 리팩토링 </br> - LoadingIndicator 구현  |
-| **2023.03.30** |  - 추상화 레벨 맞추는 리팩토링 </br> - 프로퍼티를 줄이고 매개변수로 전달하는 리팩토링 |
-| **2023.03.31** |  - 공통된 로직 제네릭으로 병합하는 리팩토링 </br> - 오토레이아웃 사용하는 곳에서 정의하는 리팩토링  |
-| **2023.04.03** | - UI 리팩토링 </br>- 메모리를 고려하여 싱글톤, weak self를 사용한 리팩토링  |
-| **2023.04.04** | - 피드백 사항에 맞춰 로직 최적화 |
-| **2023.04.05** | - 휴식 |
-| **2023.04.06** | - 프로토콜및 하드코딩을 이용한 방식을 고차함수를 사용한 방식으로 리팩토링 |
-| **2023.04.07** | - LoadingIndicator 경제적인 방법으로 리팩토링  |
-
-
-
-</br>
 
 ## 실행 화면 🎬
 
@@ -139,241 +144,238 @@ BoxOffice
 
 ## 트러블 슈팅 🚀
 
-### 1️⃣ iOS App HTTP 접근 허용하기
+### 1️⃣ View Model 이 담당해야 할 기능
 
+#### Problem
 
-제대로 코드를 구현했다고 생각했음에도 불구하고 네트워크 통신이 제대로 되지 않는 문제가 생겼습니다.
-Postman 에서 저희가 작성한 URL 을 보냈을 때 정상적인 값이 돌아오는 것을 확인 했으나 저희 프로젝트에서는 계속해서 통신오류가 발생 하였습니다.
+디미터 법칙은 객체 간의 결합도를 낮추고 느슨한 결합(Loose Coupling)을 유지하기 위한 객체 지향 설계 원칙 중 하나입니다. 디미터 법칙은 다음과 같이 요약됩니다
+> "객체는 자신이 직접 관련된 객체와만 상호 작용해야 하며, 낯선 객체에게는 직접 접근하지 않아야 한다."
 
-
-iOS9버전 부터 애플에서 보안에 취약한 네트워크를 차단하기 위한 정책을 실행을 했고 차단된 접근 제한을 푸는 방법은 다음과 같습니다.
-
-<img src="https://i.imgur.com/CaUnS7E.png" width = 600>
-
-</br>
-
-1. info.plist에 App Transport Security Setting항목을 만듭니다.
-2. App Transport Security Setting항목의 하위에 Allow Arbitrary Loads항목을 만듭니다.
-3. Allow Arbitrary Loads항목의 Value를 No에서 Yes로 변경해줍니다.
-
-### 2️⃣ dataTask의 오류 처리
-
-startLoad 메서드로 서버와 통신을 해 받아오는 데이터에 대해 어떻게 오류를 처리할까 몇 가지 고민을 해보았습니다.
+하지만 기존의 코드는 디미터 법칙을 지키지 않고 View Model의 프로퍼티가 외부로 노출되어 있었고 해당 모델을 뷰모델에서 직접 수정까지 진행을 하고 있었습니다. 또한 사용자의 Input 과 Output 사이에 일관적인 흐름이 맞지 않았습니다.
 
 ```swift
-struct NetworkManager {
-    
-    func startLoad(urlText: String, complete: @escaping (Result<Data, NetworkError>) -> ()) {
-        //....
-        
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            //....                                           
-        }
-    }
+//ViewController의 기존 바인딩 코드
+    viewModel.boxOffice
+        .bind(to: collectionView.rx.items(dataSource: dataSource))
+        .disposed(by: disposeBag)
 ```
 
-1. startLoad 에서 return 이용하기
-처음엔 막연하게 return 을 해주면 해결되지 않을까 생각했습니다. 하지만 저희가 실질적인 오류를 처리하는 위치는 URLSession.shared.dataTask 의 코드블럭에서 작업을 하고 있었고 해당 위치에서 return 을 하게 되면 startLoad 메서드가 return 되는게 아닌 dataTask의 코드블럭에서 return 되는 것이기에 적절한 방법이 아니었습니다.
+#### Solution
 
-2. dataTask 코드블럭 안에서 throw 하기
-throw 를 통해 하기에는 startLoad 메서드에서 throw 하는게 아닌 dataTask 클로저가 throw 하는것이기에 적절하지 않다고 생각했고, 또한 해당 메서드를 사용하는 쪽에서도 처리가 애매할 것 같았습니다.
-조금 더 고민해본 결과 Complete Handler 의 파라미터로 Result 타입을 사용하기로 결졍했습니다.
+이를 해결하기 위해 뷰모델 내부의 Input 과 Ouput 타입을 만들어 View 에서 Event 라는 Input 이 들어오면 해당 인풋을 transform 하여 필요한 요소만 내뱉어주는 Output 을 내뱉어 주었습니다.
 
-3. Complete Handler의 파라미터로 Result 넘기기
-startLoad 의 파라미터로 escaping Clousre 을 사용해 해당 클로저가 startLoad 가 끝나는 후에 실행이 되도록 하였습니다.
+위 방식을 사용하게 되면서 기존에 노출되어 있는 프로퍼티가 필요가 없어지게 되어 삭제하였고, View Model 은 필요한 최소한의 정보만을 노출 해 디미터 법칙은 준수하게 되었습니다. 또한 Input과 Output이 하나의 흐름으로 묶여 일관적인 흐름을 가지게 되었습니다.
 
-또한 클로저에 파라미터로 Result 타입을 전달하도록 하여 dataTask 내부에서 통신의 결과에 대해 하나하나 검증을 하면서 통과하지 못할 경우 통과하지 못한 위치에 따라 알맞은 Error 를 failure 을 통해 전달 하도록 하였습니다.
-    
-    
-    
-### 3️⃣ verifyResult protocol을 이용해 하나로 구현하는 법
-
-현재 저희는 디코딩 할때와 Network를 통해 GET 해올 때 총 2번의 Result의 검증 절차를 거쳐야 했습니다. 
 
 ```swift
-private func verifyFetchingResult(result: Result<Data, NetworkError>) -> Data? {
-        switch result {
-        case .success(let data):
-            return data
-        case .failure(_):
-            return nil
-        }
-    }
-    
-    private func verifyDecodingResult<T: Decodable>(result: Result<T, DecodeError>) -> T? {
-        switch result {
-        case .success(let data):
-            return data
-        case .failure(_):
-            return nil
-        }
-    }
+// 변경된 바인딩 된 코드
+    let input = MovieRankingViewModel.Input(
+            didModelSelected: collectionView.rx.modelSelected(DailyBoxOffice.self).asObservable(),
+            didTapSelectDateButton: selectDateButton.rx.tap.asObservable(),
+            didTapSelectModeButton: selectModeButton.rx.tap.asObservable(),
+            didCalendarViewDismiss: NotificationCenter.default.rx.notification(.calendarViewDismiss)
+        )
+    let output = viewModel.transform(input)
+
+// transform된 output 으로 바인딩
 ```
 
-작성을 하고보니 두 메서드의 로직이 똑같아 하나로 합칠 수 있지 않을까 싶어 시도해 보았습니다.
+### 2️⃣ Builder Pattern For Declarative Programming
 
-1. Result<NSObject, Error>
+#### Problem
 
-성공할 시 넘기는 타입과 에러타입을 각각 최상위 부모 클래스로 설정을 시도 해 보았습니다.
-막연하게 부모 클래스라면 하위에 있는 클래스들도 자연스럽게 들어갈 수 있을 거라 생각하고 짜보았으나, 정상적으로 작동하질 않을 뿐 더러 애초에 문법상에서부터 맞질 않았습니다.
+RxSwift는 리액티브 프로그래밍 패러다임의 구현체로서, 데이터 스트림의 변화에 반응(react)하는 방식으로 프로그램을 작성합니다. rxSwift에서 데이터 스트림은 `"무엇"`을 표현하고, `"어떻게"` 값을 변환하거나 처리하는 것은 내부적으로 처리됩니다.
 
-
-2. Result의 프로토콜 채택 후 프로토콜을 파라미터로 받기
-
-Result 을 extension 해서 프로토콜을 채택해 모든 Result 타입에 대해 파라미터로 받을 수 있게 시도해보았습니다.
-
-하지만 해당 프로토콜을 인자로 받게 되면서 성공과 실패에 대한 분기처리를 진행할 수 없었습니다.
-
-3. Generic 사용
-
-메서드에 제네릭을 적용해 Result에 들어가는 타입이 어떤 것이든 범용적으로 쓸 수 있게 설정 했습니다.
-
-```swift
-private func verifyResult<T, E: Error>(result: Result<T, E>) throws -> T? {
-        switch result {
-        case .success(let data):
-            return data
-        case .failure(let error):
-            throw error
-        }
-    }
-```
-
-### 4️⃣ 데이터 다운로드 완료 시점에 컬렉션 뷰 업데이트 하기
-
-서버에서 데이터를 GET 하는 dataTask 는 비동기로 돌아가고 있었기에 해당 메서드를 실행한 후 collectionView 를 초기화 해주게 되면 비동기로 실행되던 다운로드 과정이 완료되지 않아 collectionView 내부에 아무런 정보도 들어가지 않던 이슈가 있었습니다.
-
-```swift
-   private func fetchBoxOfficeData(completion: @escaping () -> Void) {
-        guard let url = urlMaker.makeBoxOfficeURL(date: Date.configureYesterday(isFormatted: false)) else { return }
-        server.startLoad(url: url) { result in
-          //...
-            completion()
-        }
-    }
-```
-
-다운로드를 진행하는 메서드의 파라미터로 escaping 클로저를 사용해 해당 작업이 완료되면 collectionView 를 reload 하는 방법을 채택했습니다.
-
-다만 고려해야할 점은 다운로드를 하는 과정은 메인스레드가 아닌 다른 스레드로 돌고 있었기에 collectionView를 수정하기 위해선 메인스레드서 작업하는 과정을 필요로 했습니다.
-
-```swift
-fetchBoxOfficeData {
-            DispatchQueue.main.async {
-                self.collectionView.reloadData()
-            }
-        }
-```    
-
-<br/>
-
-### 5️⃣ LoadingIndicator가 직관적이지 않고 메모리 낭비가 심했던 문제
-
-원래는 다음과 같은 코드를 가지고 있었습니다:
-```swift
-import Foundation
-import UIKit
-
-final class LoadingIndicator {
-    static func showLoading() {
-        DispatchQueue.main.async {
-
-            guard let window = UIApplication.shared.windows.last else { return }
-
-            let loadingIndicatorView: UIActivityIndicatorView
-            
-            if let existedView = window.subviews.first(where: { $0 is UIActivityIndicatorView } ) as? UIActivityIndicatorView {
-                loadingIndicatorView = existedView
-            } else {
-                loadingIndicatorView = UIActivityIndicatorView(style: .large)
-                loadingIndicatorView.frame = window.frame
-                loadingIndicatorView.color = .systemGray3
-                window.addSubview(loadingIndicatorView)
-            }
-
-            loadingIndicatorView.startAnimating()
-        }
-    }
-
-    static func hideLoading() {
-        DispatchQueue.main.async {
-            guard let window = UIApplication.shared.windows.last else { return }
-            window.subviews.filter({ $0 is UIActivityIndicatorView }).forEach { $0.removeFromSuperview() }
-        }
-    }
-}
-```
-
-그런데, 멘토링을 하던 중 이 코드가 직관적이지 못하며 이미 존재하는 `window`를 하나씩 훑어보게 되어 메모리 낭비가 심할 것 같다는 말씀을 들었습니다. 그래서 코드에 대한 수정을 하게 되었습니다. 
-
-현재는 VC 내에서 직접 loadingIndicator 프로퍼티를 만들어주고 있습니다:
-```swift
-private let loadingIndicatorView: UIActivityIndicatorView = {
-    let loadingIndicatorView = UIActivityIndicatorView(style: .large)
-    loadingIndicatorView.color = .systemGray3
-    loadingIndicatorView.translatesAutoresizingMaskIntoConstraints = false
-    loadingIndicatorView.hidesWhenStopped = true
+선언형 프로그래밍은 `"무엇"`을 수행해야 하는지를 설명하는 방식으로 코드를 작성하는 프로그래밍 패러다임입니다. 명령형 프로그래밍과 대조되며, 코드에서 `"어떻게"` 작업을 수행하는지에 대한 세부 사항을 최소화하려고 합니다.
     
-    return loadingIndicatorView
-}()
-```
+따라서 RxSwift는 "무엇"을 표현하고 데이터 스트림을 조작하는 데 중점을 두며, 이로써 선언형 프로그래밍의 원칙을 자연스럽게 따르게 됩니다.
 
-그리고 `startAnimating()`과 `stopAnimating()`으로 관리를 해주고 있습니다:
+그럼에도 불구하고, Alert을 띄우는 과정에서 기존의 방식으로는 Alert과 Action을 생성하는 과정에서 불가피하게 명령형 프로그래밍으로 작성해야 하는 경우가 있습니다. 
+
 ```swift
-private func configureCollectionView() {
-    collectionView.dataSource = self
-    collectionView.delegate = self
-    
-    loadingIndicatorView.startAnimating()
-    
-    fetchBoxOfficeData { [weak self] in
-        DispatchQueue.main.async {
-            self?.loadingIndicatorView.stopAnimating()
+private func presentCellChangeActionSheet() {
+        let actionSheet = UIAlertController(title: "화면모드변경", message: nil, preferredStyle: .actionSheet)
+        let actionDefault = UIAlertAction(title: viewModel.cellMode.value.alertText, style: .default) { [weak self] _ in
+            self?.viewModel.changeCellMode()
             self?.collectionView.reloadData()
-            self?.collectionView.refreshControl?.endRefreshing()
         }
+        let actionCancel = UIAlertAction(title: "취소", style: .cancel)
+        
+        
+        actionSheet.addAction(actionDefault)
+        actionSheet.addAction(actionCancel)
+        
+        self.present(actionSheet, animated: true)
+    }
+```
+
+이를 해결하기 위해, 명령형 프로그래밍과 선언형 프로그래밍 사이에서 일관성을 유지하고 가독성을 높일 수 있는 빌더 패턴을 적용했습니다.
+
+빌더 패턴을 사용하면 Alert 및 Action 객체를 구성하는 과정을 선언적으로 작성할 수 있으며, 이로써 명령형 코드를 최소화하고 코드의 일관성을 유지할 수 있습니다. 이것은 RxSwift와 선언형 프로그래밍의 원칙을 적용한 코드와 어우러져 더 나은 코드 구조를 형성하는 데 도움이 됩니다.
+
+
+```swift
+AlertBuilder()
+        .preferredStyle(.actionSheet)
+        .withTitle("화면모드 변경")
+        .addAction(self.viewModel.cellMode.value.alertText,style: .default, handler: ({ _ in
+                   self.viewModel.changeCellMode()
+                   self.collectionView.reloadData()
+                    }))
+        .addAction("취소", style: .cancel)
+        .show(in: self)
+```
+
+<details>
+<summary>AlertBuilder 구현부</summary>
+<div markdown="2">
+
+```swift
+final class AlertBuilder {
+    private var preferredStyle: UIAlertController.Style = .alert
+    private var title: String? = nil
+    private var message: String? = nil
+    private var actions: [UIAlertAction] = [UIAlertAction]()
+
+    
+    func preferredStyle(_ style: UIAlertController.Style) -> AlertBuilder {
+        self.preferredStyle = style
+        return self
+    }
+    
+    func withTitle(_ title: String?) -> AlertBuilder {
+        self.title = title
+        return self
+    }
+    
+    func withMessage(_ message: String?) -> AlertBuilder {
+        self.message = message
+        return self
+    }
+    
+    func addAction(_ title: String, style: UIAlertAction.Style, handler: ((UIAlertAction) -> Void)? = nil) -> AlertBuilder {
+        let action = UIAlertAction(title: title, style: style, handler: handler)
+        actions.append(action)
+        
+        return self
+    }
+    
+    func show(in viewController: UIViewController, animated: Bool = true) {
+        viewController.present(build(), animated: animated)
+    }
+    
+    private func build() -> UIAlertController {
+        let alert = UIAlertController(title: self.title, message: self.message, preferredStyle: self.preferredStyle)
+        actions.forEach { action in
+            alert.addAction(action)
+        }
+        
+        return alert
     }
 }
 ```
 
-이를 통해서 조금 더 직관적이고 간결한 코드가 된 것 같습니다. 
+</div>
+</details>
 
-### 6️⃣ 클래스만 사용 가능한 프로토콜
-화면간 데이터 전달을 하기위해 저희는 Delegate 패턴을 이용하기로 했습니다.
 
-```swift
-protocol CalendarViewControllerDelegate {
-    func deliverData(_ data: String)
-}
+### 3️⃣ RxDataSource
 
-final class CalendarViewController: UIViewController {
-    weak var delegate: CalendarViewControllerDelegate?
-    //...
-}
-```
+#### Problem
 
-이제 delegate 를 사용할 때 강한순환 참조에 조심을 해야합니다.
-`CalendarViewController` 가 `deinit` 되는 시점에 delegate도 같이 사라져야하지만, 만약 해당 delegate 를 사용하는 곳이 있다면 `retaing Cycle` 의 문제가 생길 수 있어 weak 키워드를 붙여 약한 참조를 하도록 해야합니다.
+초기에는 사용에 익숙한 `DiffableDataSource` 를 적용하고자 했습니다. `DiffableDataSource` 각 요소를 고유하게 식별하기 위해 `Hashable` 한 요소들을 배열로 관리를 합니다. 특정요소를 접근하기 위해선 `IndexPath` 가 필수적으로 필요합니다.
 
-```bash
-'weak' must not be applied to non-class-bound 'any CalendarViewControllerDelegate'; consider adding a protocol conformance that has a class bound
-```
+![](https://hackmd.io/_uploads/rkaX6jAy6.png)
 
-그래서 delegate를 weak 하게 선언했지만 위와 같은 오류가 발생했습니다. 
+`DiffableDataSource`의 `CellProvider` 의 파라미터를 살펴보면 특정요소에 접근할 수 있도록 IndexPath 를 제공하고 있습니다. 하지만 현재 제 상황에선 Cell에 들어가는 Data 들을 ViewModel에서 따로 저장해 관리하지 않고 Input에 대한 결과인 Output으로 보내주고 있엇기에 IndexPath 로 특정 요소에 접근하는 것이 불가능했습니다.
 
-찾아보니 weak 이 발생하려면 reference 타입이어야 하고 protocol의 경우 value 타입에도 적용이 가능하기에 weak 타입을 쓰기위해선 protocol 이 class 에서만 사용할 수 있다는 것을 명시해줘야 했습니다.
+#### Solution
 
+이를 해결하기 위해 `RxDataSource` 를 도입했습니다. `RxDataSource` 는 `DiffableDataSource` 와 사용법과 모양이 굉장히 유사하지만 `CellProvider` 의 파라미터에서 차이점이 존재합니다.
 
 ```swift
-protocol CalendarViewControllerDelegate: AnyObject {
-    func deliverData(_ data: String)
+open class CollectionViewSectionedDataSource<Section: SectionModelType> {
+
+public typealias ConfigureCell = (CollectionViewSectionedDataSource<Section>, UICollectionView, IndexPath, Item) -> UICollectionViewCell
+
+public init(
+        configureCell: @escaping ConfigureCell,
+        configureSupplementaryView: ConfigureSupplementaryView? = nil,
+        moveItem: @escaping MoveItem = { _, _, _ in () },
+        canMoveItemAtIndexPath: @escaping CanMoveItemAtIndexPath = { _, _ in false }
+    ) {
+        self.configureCell = configureCell
+        self.configureSupplementaryView = configureSupplementaryView
+        self.moveItem = moveItem
+        self.canMoveItemAtIndexPath = canMoveItemAtIndexPath
+    }
 }
 ```
 
+RxDataSource 의 CellProvider 의 파라미터로는 다음과 같은것이 있습니다.
+
+- DataSource
+- TableView or CollectionView
+- IndexPath
+- Item
+
+RxDataSource는 DiffableDataSource와는 다르게 데이터를 직접 파라미터로 받아오며, 이를 통해 IndexPath를 사용하여 필요한 특정 요소에 직접 접근할 수 있습니다. 이로 인해 데이터를 별도로 보관하거나 관리하지 않아도 되며, DataSource를 구성하고 업데이트하는 작업을 더 간편하게 수행할 수 있게 됩니다.
+
+```swift
+  dataSource = RxCollectionViewSectionedReloadDataSource<MovieRankingViewDataSection> { _, _, indexPath, item in
+            switch self.viewModel.cellMode {
+            case .list:
+                guard let cell = self.collectionView.dequeueReusableCell(withReuseIdentifier: CustomCollectionViewListCell.identifier, for: indexPath) as? CustomCollectionViewListCell else { return CustomCollectionViewListCell() }
+                cell.configureCell(dailyBoxOffice: item)
+                
+                return cell
+            case .icon:
+                guard let cell = self.collectionView.dequeueReusableCell(withReuseIdentifier: CustomCollectionViewIconCell.identifier, for: indexPath) as? CustomCollectionViewIconCell else { return CustomCollectionViewIconCell() }
+                cell.configureCell(dailyBoxOffice: item)
+                
+                return cell
+            }
+        }
+```
+
+### 4️⃣ 두개의 Input 하나의 Output
+
+#### Problem
+
+어플리케이션을 초기에 실행할때와 CalendarView 가 Dismiss 되는 시점의 Event Input이 발생되었을 때 ViewModel 에서 View 에서 Binding 되어야할 모델과 날짜를 Output 을 보내주고 있습니다. 
+
+하지만 각각의 Output 이 별개의 Observable 로 반환이 되고 있었기에 Binding에 어려움을 겪었습니다. 초기에는 각각의 Observable 을 직접 Binding 을 진행을 하려했으나 한번 Binding 되어있는 데이터소스에 다시 Binding을 진행하니 App Crash 를 경험했습니다.
+
+#### Solution
+
+RxSwift의 Combining Operator 중 하나인 Merge를 활용하여 이 문제를 해결하였습니다. ViewModel에서 데이터를 처리하는 단계에서 두 개의 입력에 대한 결과를 병합하여 하나의 Output으로 출력함으로써, 단 한 번의 Binding으로 문제를 해결할 수 있게 되었습니다.
+
+```swift
+let defaultDate = Observable.just(currentDate)
+        
+let updatedDate = input.didCalendarViewDismiss
+        .compactMap { notification in
+            notification.userInfo?["currentDate"] as? Date
+            }
+        .withUnretained(self)
+        .map { owner, date in
+            owner.currentDate = date
+            }
+        .withUnretained(self)
+        .map { owner, _ in
+            owner.currentDate
+            }
+   
+let currentDate = Observable.of(defaultDate, updatedDate).merge()
+        
+let boxOffice = currentDate
+        .withUnretained(self)
+        .flatMap { owner, date in
+            owner.useCase.fetchBoxOfficeData(date: date)
+            }
+        .map { boxOfficeList in
+            [MovieRankingViewDataSection(header: "main", items: boxOfficeList)]
+            }
+```
 
 
-## Reference 📑
-- [Fetching Website Data into Memory - Apple Document](https://developer.apple.com/documentation/foundation/url_loading_system/fetching_website_data_into_memory)
-- [URLSession - Apple Document](https://developer.apple.com/documentation/foundation/urlsession#declaration)
-- [UICalendarView - Apple Document](https://developer.apple.com/documentation/uikit/uicalendarview)
-- [UIActivityIndicatorView - Apple Document](https://developer.apple.com/documentation/uikit/uiactivityindicatorview)
