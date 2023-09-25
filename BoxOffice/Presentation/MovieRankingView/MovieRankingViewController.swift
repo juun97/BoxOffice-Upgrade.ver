@@ -113,18 +113,15 @@ final class MovieRankingViewController: UIViewController {
     }
     
     func bind() {
-        let didModelSelected = collectionView.rx.modelSelected(DailyBoxOffice.self).asObservable()
-        let didTapSelectDateButton = selectDateButton.rx.tap.asObservable()
-        let didTapSelectModeButton = selectModeButton.rx.tap.asObservable()
-        let didCalendarViewDismiss = NotificationCenter.default.rx.notification(.calendarViewDismiss)
-  
-        let input = MovieRankingViewModel.Input(didModelSelected: didModelSelected,
-                                                didTapSelectDateButton: didTapSelectDateButton,
-                                                didTapSelectModeButton: didTapSelectModeButton,
-                                                didCalendarViewDismiss: didCalendarViewDismiss)
+        
+        let input = MovieRankingViewModel.Input(
+            didModelSelected: collectionView.rx.modelSelected(DailyBoxOffice.self).asObservable(),
+            didTapSelectDateButton: selectDateButton.rx.tap.asObservable(),
+            didTapSelectModeButton: selectModeButton.rx.tap.asObservable(),
+            didCalendarViewDismiss: NotificationCenter.default.rx.notification(.calendarViewDismiss)
+        )
         let output = viewModel.transform(input)
         
-      
         output.boxOffice
             .observe(on: MainScheduler.instance)
             .bind(to: collectionView.rx.items(dataSource: dataSource))
@@ -173,7 +170,7 @@ final class MovieRankingViewController: UIViewController {
     }
     
     func configureDataSource() {
-        dataSource = RxCollectionViewSectionedReloadDataSource<MovieRankingViewDataSection> { dataSource, tableView, indexPath, item in
+        dataSource = RxCollectionViewSectionedReloadDataSource<MovieRankingViewDataSection> { _, _, indexPath, item in
             switch self.viewModel.cellMode {
             case .list:
                 guard let cell = self.collectionView.dequeueReusableCell(withReuseIdentifier: CustomCollectionViewListCell.identifier, for: indexPath) as? CustomCollectionViewListCell else { return CustomCollectionViewListCell() }
@@ -191,7 +188,6 @@ final class MovieRankingViewController: UIViewController {
     
     private func configureRootView() {
         view.backgroundColor = .white
-        //self.title = viewModel.currentDate.value.convertString(isFormatted: true)
     }
     
     private func configureNavigationController() {
