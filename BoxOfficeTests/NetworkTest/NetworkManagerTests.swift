@@ -2,10 +2,11 @@
 //  NetworkManagerTests.swift
 //  NetworkManagerTests
 //
-//  Created by Rhode, Rilla on 2023/03/23.
+//  Created by Rilla on 2023/03/23.
 //
 
 import XCTest
+import RxSwift
 @testable import BoxOffice
 
 final class NetworkManagerTests: XCTestCase {

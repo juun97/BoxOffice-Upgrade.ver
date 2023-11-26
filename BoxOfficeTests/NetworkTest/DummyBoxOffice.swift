@@ -2,7 +2,7 @@
 //  DummyBoxOffice.swift
 //  NetworkManagerTests
 //
-//  Created by Rhode, Rilla on 2023/03/30.
+//  Created by Rilla on 2023/03/30.
 //
 
 import UIKit
